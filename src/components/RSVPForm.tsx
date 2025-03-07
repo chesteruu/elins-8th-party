@@ -20,6 +20,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
     guests: 0,
     message: '',
   });
+  const [nameReadOnly, setNameReadOnly] = useState(false);
 
   const correctKey = 'ELIN2025'; // In a real app, this would be stored securely
 
@@ -33,6 +34,9 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       
       if (nameParam) {
         setFormData(prev => ({ ...prev, name: nameParam }));
+        setNameReadOnly(true);
+        // Skip key verification if name is provided in URL
+        setStep('form');
       }
       
       if (guestsParam) {
@@ -136,6 +140,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
               <div className="flex items-center gap-2 mb-2">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <label htmlFor="name" className="text-sm font-medium">Your Name</label>
+                {nameReadOnly && <span className="text-xs text-muted-foreground">(from invitation)</span>}
               </div>
               <input
                 id="name"
@@ -143,9 +148,13 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
                 type="text"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full p-3 rounded-md border border-input bg-background"
+                className={cn(
+                  "w-full p-3 rounded-md border border-input", 
+                  nameReadOnly ? "bg-muted cursor-not-allowed" : "bg-background"
+                )}
                 placeholder="Enter your name"
                 required
+                readOnly={nameReadOnly}
               />
             </div>
             
