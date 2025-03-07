@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Countdown from '@/components/Countdown';
@@ -63,14 +62,14 @@ const Index = () => {
       
       {/* Main content */}
       <div className="container max-w-5xl mx-auto px-4 py-10 md:py-16 relative z-10">
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between mb-4">
+          <div></div>
           <Link 
             to="/guests" 
-            className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-sm hover:bg-accent/10 transition-colors"
-            title="For parents only"
+            className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-sm hover:bg-accent/10 transition-colors border border-accent/20"
           >
             <UserCheck className="h-4 w-4" />
-            <span>Guest List</span>
+            <span>Manage Guest List</span>
           </Link>
         </div>
         
