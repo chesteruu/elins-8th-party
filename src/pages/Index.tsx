@@ -1,10 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Countdown from '@/components/Countdown';
 import MapLocation from '@/components/MapLocation';
 import PartyDetails from '@/components/PartyDetails';
 import RSVPForm from '@/components/RSVPForm';
-import { Cake, Star, Sparkles, CalendarCheck } from 'lucide-react';
+import { Cake, Star, Sparkles, CalendarCheck, UserCheck } from 'lucide-react';
 
 const Index = () => {
   const [mounted, setMounted] = useState(false);
@@ -62,6 +63,17 @@ const Index = () => {
       
       {/* Main content */}
       <div className="container max-w-5xl mx-auto px-4 py-10 md:py-16 relative z-10">
+        <div className="flex justify-end mb-4">
+          <Link 
+            to="/guests" 
+            className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-sm hover:bg-accent/10 transition-colors"
+            title="For parents only"
+          >
+            <UserCheck className="h-4 w-4" />
+            <span>Guest List</span>
+          </Link>
+        </div>
+        
         <div className="max-w-3xl mx-auto text-center mb-12 md:mb-16">
           <div className="flex justify-center">
             <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium animate-fade-in mb-4">

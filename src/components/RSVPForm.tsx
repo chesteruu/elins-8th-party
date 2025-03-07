@@ -1,8 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { Lock, Key, CheckCircle, User, Users, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { guestService } from '@/services/guestService';
 
 interface RSVPFormProps {
   className?: string;
@@ -10,6 +12,7 @@ interface RSVPFormProps {
 
 const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
   const { toast } = useToast();
+  const location = useLocation();
   const [step, setStep] = useState<'key' | 'form' | 'confirmed'>('key');
   const [accessKey, setAccessKey] = useState('');
   const [formData, setFormData] = useState({
@@ -19,6 +22,27 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
   });
 
   const correctKey = 'ELIN2025'; // In a real app, this would be stored securely
+
+  // Parse prefilled data from URL
+  useEffect(() => {
+    if (location.search) {
+      const params = new URLSearchParams(location.search);
+      
+      const nameParam = params.get('name');
+      const guestsParam = params.get('guests');
+      
+      if (nameParam) {
+        setFormData(prev => ({ ...prev, name: nameParam }));
+      }
+      
+      if (guestsParam) {
+        const guestCount = parseInt(guestsParam);
+        if (!isNaN(guestCount)) {
+          setFormData(prev => ({ ...prev, guests: guestCount }));
+        }
+      }
+    }
+  }, [location.search]);
 
   const handleKeySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +65,13 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
   const handleRSVPSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In a real app, you would send this data to a server
-    console.log('RSVP submitted:', formData);
+    // Save RSVP data
+    guestService.addGuest({
+      name: formData.name,
+      numberOfGuests: formData.guests,
+      message: formData.message,
+      confirmed: true,
+    });
     
     setStep('confirmed');
     toast({
