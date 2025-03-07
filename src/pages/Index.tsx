@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import Countdown from '@/components/Countdown';
 import MapLocation from '@/components/MapLocation';
 import PartyDetails from '@/components/PartyDetails';
-import { Cake, Star, Sparkles } from 'lucide-react';
+import RSVPForm from '@/components/RSVPForm';
+import { Cake, Star, Sparkles, CalendarCheck } from 'lucide-react';
 
 const Index = () => {
   const [mounted, setMounted] = useState(false);
@@ -84,7 +85,7 @@ const Index = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
           <MapLocation 
             address={partyAddress} 
             className="order-2 md:order-1"
@@ -105,6 +106,22 @@ const Index = () => {
               arrivalNote={arrivalNote}
             />
           </div>
+        </div>
+        
+        {/* RSVP Section */}
+        <div className="max-w-2xl mx-auto mb-16">
+          <div className="text-center mb-8">
+            <div className="flex justify-center items-center gap-2 mb-4">
+              <CalendarCheck className="h-5 w-5 text-primary" />
+              <h2 className="text-2xl font-bold">RSVP</h2>
+            </div>
+            <p className="text-muted-foreground">
+              Please let us know if you'll be joining the celebration.
+              The invitation key is required to submit your RSVP.
+            </p>
+          </div>
+          
+          <RSVPForm />
         </div>
         
         <div className="mt-16 text-center animate-fade-in animate-delay-500">
