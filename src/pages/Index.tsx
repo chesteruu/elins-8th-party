@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Countdown from '@/components/Countdown';
@@ -9,8 +10,8 @@ import { Cake, Star, Sparkles, CalendarCheck, UserCheck } from 'lucide-react';
 const Index = () => {
   const [mounted, setMounted] = useState(false);
   
-  // Party details
-  const partyDate = new Date('2025-04-26T16:00:00');
+  // Party details - updated to April 25, 2025 (Friday)
+  const partyDate = new Date('2025-04-25T16:00:00');
   const partyAddress = 'SMASH Täby, Täby Centrum, Stora Marknadsvägen 15, 183 70 Täby';
   const arrivalNote = 'Please arrive 10 minutes earlier.';
   
@@ -56,7 +57,13 @@ const Index = () => {
   }, [mounted]);
   
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-gradient-radial from-background to-accent/5 relative">
+    <div className="min-h-screen w-full overflow-hidden relative z-10">
+      {/* Colorful background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-pink-200 via-purple-200 to-cyan-200 -z-10"></div>
+      
+      {/* Confetti-like decoration */}
+      <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMjYgNTJjMTQuMzYgMCAyNi0xMS42NCAyNi0yNlM0MC4zNiAwIDI2IDBTMCAxMS42NCAwIDI2czExLjY0IDI2IDI2IDI2eiIgZmlsbD0iI0ZGRDNFOCIgZmlsbC1vcGFjaXR5PSIuMiIvPjwvZz48L3N2Zz4=')] opacity-40 -z-10"></div>
+      
       {/* Stars container */}
       <div id="stars-container" className="fixed inset-0 pointer-events-none z-0"></div>
       

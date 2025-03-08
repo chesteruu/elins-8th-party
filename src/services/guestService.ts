@@ -6,6 +6,7 @@ export interface Guest {
   numberOfGuests: number;
   message?: string;
   confirmed: boolean;
+  attending?: boolean | null; // true for attending, false for not attending, null for unconfirmed
 }
 
 // In a real app, this would use a database. Using localStorage for demo purposes
@@ -55,7 +56,7 @@ class GuestService {
     if (guest.email) params.append('email', guest.email);
     if (guest.numberOfGuests) params.append('guests', guest.numberOfGuests.toString());
     
-    return `${baseUrl}/rsvp?${params.toString()}`;
+    return `${baseUrl}?${params.toString()}`;
   }
 }
 
