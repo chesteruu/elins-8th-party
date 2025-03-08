@@ -1,9 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Copy, Home, Check, ChevronLeft, UserPlus, Users, Mail, Sparkles, X, Send } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Copy, Home, Check, ChevronLeft, UserPlus, Users, Mail, Sparkles, X, Send, Trash2 } from 'lucide-react';
 import { guestService, Guest } from '@/services/guestService';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 const GuestList = () => {
   const [guests, setGuests] = useState<Guest[]>([]);
@@ -13,7 +16,12 @@ const GuestList = () => {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const [emailSubject, setEmailSubject] = useState("🎂 Elin's 8th Birthday Party! 🎈");
+  const [showPasswordDialog, setShowPasswordDialog] = useState(true);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Email template
   const getEmailTemplate = (guestName: string, rsvpLink: string) => {
@@ -39,8 +47,24 @@ We can't wait to celebrate with you! 🎉🎁✨
   
   // Load guests from storage
   useEffect(() => {
-    setGuests(guestService.getGuests());
-  }, []);
+    // Initialize default password if needed
+    if (!guestService.getPassword()) {
+      guestService.setPassword('2025042808');
+    }
+    
+    if (!showPasswordDialog) {
+      setGuests(guestService.getGuests());
+    }
+  }, [showPasswordDialog]);
+  
+  const handlePasswordSubmit = () => {
+    if (guestService.verifyPassword(password)) {
+      setShowPasswordDialog(false);
+      setPasswordError('');
+    } else {
+      setPasswordError('Incorrect password. Please try again.');
+    }
+  };
   
   const handleAddGuest = () => {
     if (!newGuest.name) {
@@ -71,14 +95,14 @@ We can't wait to celebrate with you! 🎉🎁✨
     });
   };
   
-  const copyInvitationLink = (guest: Guest) => {
-    const link = guestService.createInvitationLink(guest);
-    navigator.clipboard.writeText(link);
+  const copyInvitationTemplate = (guest: Guest) => {
+    const template = guestService.createInvitationTemplate(guest);
+    navigator.clipboard.writeText(template);
     setCopiedId(guest.id);
     
     toast({
-      title: "Link copied!",
-      description: "Invitation link has been copied to clipboard",
+      title: "Invitation copied!",
+      description: "Full invitation template has been copied to clipboard",
     });
     
     setTimeout(() => setCopiedId(null), 2000);
@@ -109,10 +133,58 @@ We can't wait to celebrate with you! 🎉🎁✨
     });
   };
   
+  const clearAllGuests = () => {
+    guestService.clearAllGuests();
+    setGuests([]);
+    setShowClearConfirmation(false);
+    
+    toast({
+      title: "Guest list cleared",
+      description: "All guests have been removed from the list",
+    });
+  };
+  
   const attendingGuests = guests.filter(g => g.confirmed && g.attending === true);
   const decliningGuests = guests.filter(g => g.confirmed && g.attending === false);
   const pendingGuests = guests.filter(g => !g.confirmed || g.attending === null);
   const totalAttending = attendingGuests.reduce((sum, g) => sum + g.numberOfGuests, 0);
+  
+  if (showPasswordDialog) {
+    return (
+      <div className="min-h-screen w-full bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center p-4">
+        <div className="glass rounded-xl p-8 border border-accent/20 max-w-md w-full">
+          <h2 className="text-2xl font-bold mb-6 text-center">Password Required</h2>
+          <p className="mb-6 text-center text-muted-foreground">
+            Please enter the password to access the guest list management page.
+          </p>
+          <div className="space-y-4">
+            <div>
+              <Input
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                className="w-full"
+              />
+              {passwordError && (
+                <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+              )}
+            </div>
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => navigate('/')}>
+                <Home className="h-4 w-4 mr-2" />
+                Return Home
+              </Button>
+              <Button onClick={handlePasswordSubmit}>
+                Access Guest List
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100">
@@ -123,7 +195,15 @@ We can't wait to celebrate with you! 🎉🎁✨
             Back to invitation
           </Link>
           <h1 className="text-3xl font-bold">Guest List</h1>
-          <div></div>
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={() => setShowClearConfirmation(true)}
+            className="flex items-center gap-1"
+          >
+            <Trash2 className="h-4 w-4" />
+            Clear List
+          </Button>
         </div>
         
         {/* Stats summary */}
@@ -264,6 +344,26 @@ We can't wait to celebrate with you! 🎉🎁✨
           </div>
         )}
         
+        {/* Clear confirmation dialog */}
+        <Dialog open={showClearConfirmation} onOpenChange={setShowClearConfirmation}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Clear Guest List</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to clear the entire guest list? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowClearConfirmation(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={clearAllGuests}>
+                Yes, Clear List
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
         {/* Guest lists */}
         <div className="space-y-8">
           {attendingGuests.length > 0 && (
@@ -297,9 +397,9 @@ We can't wait to celebrate with you! 🎉🎁✨
                           </button>
                         )}
                         <button
-                          onClick={() => copyInvitationLink(guest)}
+                          onClick={() => copyInvitationTemplate(guest)}
                           className="p-2 rounded-full hover:bg-accent/10 transition-colors"
-                          title="Copy invitation link"
+                          title="Copy invitation template"
                         >
                           {copiedId === guest.id ? (
                             <Check className="h-4 w-4 text-green-500" />
@@ -342,9 +442,9 @@ We can't wait to celebrate with you! 🎉🎁✨
                           </button>
                         )}
                         <button
-                          onClick={() => copyInvitationLink(guest)}
+                          onClick={() => copyInvitationTemplate(guest)}
                           className="p-2 rounded-full hover:bg-accent/10 transition-colors"
-                          title="Copy invitation link"
+                          title="Copy invitation template"
                         >
                           {copiedId === guest.id ? (
                             <Check className="h-4 w-4 text-green-500" />
@@ -387,9 +487,9 @@ We can't wait to celebrate with you! 🎉🎁✨
                           </button>
                         )}
                         <button
-                          onClick={() => copyInvitationLink(guest)}
+                          onClick={() => copyInvitationTemplate(guest)}
                           className="p-2 rounded-full hover:bg-accent/10 transition-colors"
-                          title="Copy invitation link"
+                          title="Copy invitation template"
                         >
                           {copiedId === guest.id ? (
                             <Check className="h-4 w-4 text-green-500" />

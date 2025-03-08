@@ -12,6 +12,11 @@ export interface Guest {
 // In a real app, this would use a database. Using localStorage for demo purposes
 class GuestService {
   private readonly STORAGE_KEY = 'elinBirthdayGuests';
+  private readonly PASSWORD_KEY = 'elinBirthdayPassword';
+  private readonly PARTY_DATE = '2025-04-25';
+  private readonly PARTY_TIME = '16:00';
+  private readonly PARTY_LOCATION = 'SMASH Täby, Täby Centrum';
+  private readonly PARTY_ADDRESS = 'Stora Marknadsvägen 15, 183 70 Täby';
   
   getGuests(): Guest[] {
     const storedGuests = localStorage.getItem(this.STORAGE_KEY);
@@ -57,6 +62,51 @@ class GuestService {
     if (guest.numberOfGuests) params.append('guests', guest.numberOfGuests.toString());
     
     return `${baseUrl}?${params.toString()}`;
+  }
+  
+  // Generate full invitation template with guest details
+  createInvitationTemplate(guest: Partial<Guest>): string {
+    const link = this.createInvitationLink(guest);
+    const name = guest.name || "Friend";
+    
+    return `🎂 Elin's 8th Birthday Party! 🎈
+
+You're invited to a fun-filled celebration for Elin's 8th birthday! 🎊 Come join us for an unforgettable day of games, laughter, and sweet treats!
+
+📅 Date: Friday, April 25, 2025
+⏰ Time: ${this.PARTY_TIME} (Please arrive 10 minutes earlier! ⏳)
+📍 Location: ${this.PARTY_LOCATION}
+📍 Address: ${this.PARTY_ADDRESS}
+
+🎠 Get ready for a day of fun activities, yummy snacks, and birthday surprises!
+
+RSVP: Please confirm your attendance by clicking the link: ${link}
+
+We can't wait to celebrate with you! 🎉🎁✨`;
+  }
+  
+  // Clear all guests
+  clearAllGuests(): void {
+    localStorage.removeItem(this.STORAGE_KEY);
+  }
+  
+  // Password protection methods
+  setPassword(password: string): void {
+    localStorage.setItem(this.PASSWORD_KEY, password);
+  }
+  
+  getPassword(): string | null {
+    return localStorage.getItem(this.PASSWORD_KEY);
+  }
+  
+  verifyPassword(password: string): boolean {
+    const storedPassword = this.getPassword();
+    if (!storedPassword) {
+      // Set default password if none exists
+      this.setPassword("2025042808");
+      return password === "2025042808";
+    }
+    return password === storedPassword;
   }
 }
 

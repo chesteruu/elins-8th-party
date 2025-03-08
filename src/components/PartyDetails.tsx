@@ -12,7 +12,7 @@ interface PartyDetailsProps {
 
 const PartyDetails: React.FC<PartyDetailsProps> = ({ date, arrivalNote, className }) => {
   const formattedDate = format(date, 'EEEE, MMMM d, yyyy');
-  const formattedTime = format(date, 'HH:mm'); // Changed to 24-hour format
+  const formattedTime = format(date, 'HH:mm'); // Using 24-hour format
   
   return (
     <div className={cn("space-y-4 animate-fade-in animate-delay-200", className)}>
