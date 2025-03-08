@@ -42,13 +42,18 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       if (idParam) {
         // Try to find existing guest by ID
         const guest = guestService.findGuestById(idParam);
+        
+        // For debugging
+        console.log("Found guest with ID:", idParam, guest);
+        
         if (guest) {
           setExistingGuest(guest);
           guestData = {
             id: guest.id,
             name: guest.name,
-            guests: guest.numberOfGuests,
-            attending: guest.attending === false ? false : true
+            guests: guest.numberOfGuests || 1,
+            attending: guest.attending === false ? false : true,
+            message: guest.message || ''
           };
           setNameReadOnly(true);
           isValidLink = true; // Valid if guest exists
