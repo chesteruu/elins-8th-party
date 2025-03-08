@@ -1,4 +1,3 @@
-
 export interface Guest {
   id: string;
   name: string;
@@ -49,19 +48,27 @@ class GuestService {
   }
   
   findGuestById(id: string): Guest | undefined {
-    return this.getGuests().find(g => g.id === id);
+    const guests = this.getGuests();
+    console.log("All guests in storage:", guests);
+    console.log("Looking for guest with ID:", id);
+    return guests.find(g => g.id === id);
   }
   
   // Create invitation link with pre-filled data
-  createInvitationLink(guest: Partial<Guest>): string {
+  createInvitationLink(guest: Partial<Guest> & { id?: string }): string {
     const baseUrl = window.location.origin;
     const params = new URLSearchParams();
     
-    if (guest.name) params.append('name', guest.name);
-    if (guest.email) params.append('email', guest.email);
-    if (guest.numberOfGuests) params.append('guests', guest.numberOfGuests.toString());
+    if (guest.id) {
+      // If guest has an ID, this is an existing guest, use that for updating
+      params.append('id', guest.id);
+    } else {
+      // For new guests, include name and number of guests
+      if (guest.name) params.append('name', guest.name);
+      if (guest.numberOfGuests) params.append('guests', guest.numberOfGuests.toString());
+    }
     
-    return `${baseUrl}?${params.toString()}`;
+    return `${baseUrl}/confirm-attendance?${params.toString()}`;
   }
   
   // Generate full invitation template with guest details
