@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Key, CheckCircle, User, Users, MessageCircle, Check, X } from 'lucide-react';
+import { User, Users, MessageCircle, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { guestService } from '@/services/guestService';
+import { guestService, Guest } from '@/services/guestService';
 
 interface RSVPFormProps {
   className?: string;
@@ -13,79 +13,69 @@ interface RSVPFormProps {
 const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
   const { toast } = useToast();
   const location = useLocation();
-  const [step, setStep] = useState<'key' | 'form' | 'confirmed' | 'declined'>('key');
-  const [accessKey, setAccessKey] = useState('');
+  const navigate = useNavigate();
+  const [step, setStep] = useState<'form' | 'confirmed' | 'declined'>('form');
   const [formData, setFormData] = useState({
+    id: '',
     name: '',
     guests: 0,
     message: '',
     attending: true,
   });
   const [nameReadOnly, setNameReadOnly] = useState(false);
-
-  const correctKey = 'ELIN2025'; // In a real app, this would be stored securely
+  const [existingGuest, setExistingGuest] = useState<Guest | null>(null);
 
   // Parse prefilled data from URL
   useEffect(() => {
     if (location.search) {
       const params = new URLSearchParams(location.search);
       
+      const idParam = params.get('id');
       const nameParam = params.get('name');
       const guestsParam = params.get('guests');
       
-      if (nameParam) {
-        setFormData(prev => ({ ...prev, name: nameParam }));
-        setNameReadOnly(true);
-        // Skip key verification if name is provided in URL
-        setStep('form');
-      }
+      let guestData = {};
       
-      if (guestsParam) {
-        const guestCount = parseInt(guestsParam);
-        if (!isNaN(guestCount)) {
-          setFormData(prev => ({ ...prev, guests: guestCount }));
+      if (idParam) {
+        // Try to find existing guest by ID
+        const guest = guestService.findGuestById(idParam);
+        if (guest) {
+          setExistingGuest(guest);
+          guestData = {
+            id: guest.id,
+            name: guest.name,
+            guests: guest.numberOfGuests,
+            attending: guest.attending === false ? false : true
+          };
+          setNameReadOnly(true);
         }
       }
-    }
-  }, [location.search]);
-
-  const handleKeySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (accessKey.trim().toUpperCase() === correctKey) {
-      setStep('form');
-      toast({
-        title: "Success!",
-        description: "Key verified. You can now RSVP.",
-      });
+      
+      if (nameParam && !idParam) {
+        guestData = { ...guestData, name: nameParam };
+        setNameReadOnly(true);
+      }
+      
+      if (guestsParam && !idParam) {
+        const guestCount = parseInt(guestsParam);
+        if (!isNaN(guestCount)) {
+          guestData = { ...guestData, guests: guestCount };
+        }
+      }
+      
+      setFormData(prev => ({ ...prev, ...guestData }));
     } else {
-      toast({
-        title: "Invalid key",
-        description: "Please check your invitation for the correct key.",
-        variant: "destructive",
-      });
+      // If no URL parameters, redirect to home page
+      // This makes the form only accessible via a link
+      navigate('/');
     }
-  };
+  }, [location.search, navigate]);
 
-  const handleRSVPSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Save RSVP data
-    guestService.addGuest({
-      name: formData.name,
-      numberOfGuests: formData.attending ? formData.guests : 0,
-      message: formData.message,
-      confirmed: true,
-      attending: formData.attending,
-    });
-    
-    // Set appropriate confirmation step
-    setStep(formData.attending ? 'confirmed' : 'declined');
-    
-    toast({
-      title: "Thank you!",
-      description: `Your RSVP has been ${formData.attending ? 'accepted' : 'declined'}.`,
-    });
+  const handleAttendingChange = (attending: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      attending,
+    }));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -96,54 +86,49 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
     }));
   };
 
-  const handleAttendingChange = (attending: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      attending,
-    }));
+  const handleRSVPSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // If guest already exists, update it
+    if (existingGuest) {
+      guestService.updateGuest(existingGuest.id, {
+        numberOfGuests: formData.attending ? formData.guests : 0,
+        message: formData.message,
+        confirmed: true,
+        attending: formData.attending,
+      });
+      
+      toast({
+        title: "Thank you!",
+        description: `Your attendance status has been updated.`,
+      });
+    } else {
+      // Save new RSVP data
+      guestService.addGuest({
+        name: formData.name,
+        numberOfGuests: formData.attending ? formData.guests : 0,
+        message: formData.message,
+        confirmed: true,
+        attending: formData.attending,
+      });
+      
+      toast({
+        title: "Thank you!",
+        description: `Your attendance has been ${formData.attending ? 'confirmed' : 'declined'}.`,
+      });
+    }
+    
+    // Set appropriate confirmation step
+    setStep(formData.attending ? 'confirmed' : 'declined');
   };
 
   return (
     <div className={cn("w-full", className)}>
-      {step === 'key' && (
-        <div className="glass rounded-xl p-6 animate-fade-in">
-          <div className="flex items-center gap-2 mb-4">
-            <Lock className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-medium">RSVP Access</h2>
-          </div>
-          <p className="mb-4 text-muted-foreground">Please enter the invitation key to RSVP.</p>
-          
-          <form onSubmit={handleKeySubmit} className="space-y-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Key className="h-4 w-4 text-muted-foreground" />
-                <label htmlFor="access-key" className="text-sm font-medium">Invitation Key</label>
-              </div>
-              <input
-                id="access-key"
-                type="text"
-                value={accessKey}
-                onChange={(e) => setAccessKey(e.target.value)}
-                className="w-full p-3 rounded-md border border-input bg-background"
-                placeholder="Enter your key"
-                required
-              />
-            </div>
-            <button 
-              type="submit" 
-              className="w-full bg-primary text-primary-foreground rounded-md p-3 hover:bg-primary/90 transition-colors"
-            >
-              Verify Key
-            </button>
-          </form>
-        </div>
-      )}
-
       {step === 'form' && (
         <div className="glass rounded-xl p-6 animate-fade-in">
           <div className="flex items-center gap-2 mb-4">
-            <CheckCircle className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-medium">RSVP to the Party</h2>
+            <Check className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-medium">Confirm Your Attendance</h2>
           </div>
           
           <form onSubmit={handleRSVPSubmit} className="space-y-4">
@@ -251,7 +236,9 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
                   : "bg-red-500 hover:bg-red-500/90"
               )}
             >
-              {formData.attending ? "Confirm Attendance" : "Confirm Absence"}
+              {existingGuest 
+                ? "Update Attendance" 
+                : formData.attending ? "Confirm Attendance" : "Confirm Absence"}
             </button>
           </form>
         </div>
@@ -261,11 +248,11 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
         <div className="glass rounded-xl p-6 text-center animate-fade-in">
           <div className="flex flex-col items-center justify-center gap-4 mb-6">
             <div className="rounded-full bg-green-100 p-3">
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <Check className="h-8 w-8 text-green-500" />
             </div>
             <h2 className="text-xl font-bold">Thank You!</h2>
           </div>
-          <p className="mb-4">Your RSVP has been confirmed.</p>
+          <p className="mb-4">Your attendance has been confirmed.</p>
           <p className="text-muted-foreground">We look forward to celebrating with you!</p>
         </div>
       )}

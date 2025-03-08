@@ -53,15 +53,20 @@ class GuestService {
   }
   
   // Create invitation link with pre-filled data
-  createInvitationLink(guest: Partial<Guest>): string {
+  createInvitationLink(guest: Partial<Guest> & { id?: string }): string {
     const baseUrl = window.location.origin;
     const params = new URLSearchParams();
     
-    if (guest.name) params.append('name', guest.name);
-    if (guest.email) params.append('email', guest.email);
-    if (guest.numberOfGuests) params.append('guests', guest.numberOfGuests.toString());
+    if (guest.id) {
+      // If guest has an ID, this is an existing guest, use that for updating
+      params.append('id', guest.id);
+    } else {
+      // For new guests, include name and number of guests
+      if (guest.name) params.append('name', guest.name);
+      if (guest.numberOfGuests) params.append('guests', guest.numberOfGuests.toString());
+    }
     
-    return `${baseUrl}?${params.toString()}`;
+    return `${baseUrl}/rsvp?${params.toString()}`;
   }
   
   // Generate full invitation template with guest details
