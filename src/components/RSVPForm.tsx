@@ -24,8 +24,9 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
   });
   const [nameReadOnly, setNameReadOnly] = useState(false);
   const [existingGuest, setExistingGuest] = useState<Guest | null>(null);
+  const [validLink, setValidLink] = useState(false);
 
-  // Parse prefilled data from URL
+  // Parse prefilled data from URL and validate the link
   useEffect(() => {
     if (location.search) {
       const params = new URLSearchParams(location.search);
@@ -34,6 +35,8 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       const nameParam = params.get('name');
       const guestsParam = params.get('guests');
       
+      // Initialize with invalid link assumption
+      let isValidLink = false;
       let guestData = {};
       
       if (idParam) {
@@ -48,28 +51,40 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
             attending: guest.attending === false ? false : true
           };
           setNameReadOnly(true);
+          isValidLink = true; // Valid if guest exists
         }
-      }
-      
-      if (nameParam && !idParam) {
-        guestData = { ...guestData, name: nameParam };
+      } else if (nameParam) {
+        // If no ID but has name, this is from a valid invite
+        guestData = { name: nameParam };
         setNameReadOnly(true);
-      }
-      
-      if (guestsParam && !idParam) {
-        const guestCount = parseInt(guestsParam);
-        if (!isNaN(guestCount)) {
-          guestData = { ...guestData, guests: guestCount };
+        
+        if (guestsParam) {
+          const guestCount = parseInt(guestsParam);
+          if (!isNaN(guestCount)) {
+            guestData = { ...guestData, guests: guestCount };
+          }
         }
+        
+        isValidLink = true; // Valid if it has name parameter
       }
       
-      setFormData(prev => ({ ...prev, ...guestData }));
+      if (isValidLink) {
+        setFormData(prev => ({ ...prev, ...guestData }));
+        setValidLink(true);
+      } else {
+        // Invalid link
+        toast({
+          title: "Invalid invitation link",
+          description: "This link appears to be invalid or expired.",
+          variant: "destructive",
+        });
+        navigate('/');
+      }
     } else {
       // If no URL parameters, redirect to home page
-      // This makes the form only accessible via a link
       navigate('/');
     }
-  }, [location.search, navigate]);
+  }, [location.search, navigate, toast]);
 
   const handleAttendingChange = (attending: boolean) => {
     setFormData(prev => ({
@@ -121,6 +136,11 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
     // Set appropriate confirmation step
     setStep(formData.attending ? 'confirmed' : 'declined');
   };
+
+  // If the link is invalid, don't render the form at all
+  if (!validLink) {
+    return null;
+  }
 
   return (
     <div className={cn("w-full", className)}>
