@@ -1,3 +1,4 @@
+
 export interface Guest {
   id: string;
   name: string;
@@ -48,10 +49,7 @@ class GuestService {
   }
   
   findGuestById(id: string): Guest | undefined {
-    const guests = this.getGuests();
-    console.log("All guests in storage:", guests);
-    console.log("Looking for guest with ID:", id);
-    return guests.find(g => g.id === id);
+    return this.getGuests().find(g => g.id === id);
   }
   
   // Create invitation link with pre-filled data
@@ -68,7 +66,7 @@ class GuestService {
       if (guest.numberOfGuests) params.append('guests', guest.numberOfGuests.toString());
     }
     
-    return `${baseUrl}/confirm-attendance?${params.toString()}`;
+    return `${baseUrl}/rsvp?${params.toString()}`;
   }
   
   // Generate full invitation template with guest details
