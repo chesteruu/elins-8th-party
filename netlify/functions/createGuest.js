@@ -25,7 +25,7 @@ exports.handler = async (event) => {
         numberOfGuests: ${data.numberOfGuests},
         message: ${data.message || ''},
         confirmed: ${data.confirmed || false},
-        attending: ${data.attending || null}
+        attending: ${data.attending || false}
       })
     `);
     
