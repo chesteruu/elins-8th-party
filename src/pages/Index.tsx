@@ -58,11 +58,14 @@ const Index = () => {
   
   return (
     <div className="min-h-screen w-full overflow-hidden relative z-10">
-      {/* Colorful background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-pink-200 via-purple-200 to-cyan-200 -z-10"></div>
+      {/* Background image */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
+        style={{ backgroundImage: 'url("/lovable-uploads/eaefef1e-c7ce-4732-a689-b36dd0736fe0.png")' }}
+      ></div>
       
-      {/* Confetti-like decoration */}
-      <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMjYgNTJjMTQuMzYgMCAyNi0xMS42NCAyNi0yNlM0MC4zNiAwIDI2IDBTMCAxMS42NCAwIDI2czExLjY0IDI2IDI2IDI2eiIgZmlsbD0iI0ZGRDNFOCIgZmlsbC1vcGFjaXR5PSIuMiIvPjwvZz48L3N2Zz4=')] opacity-40 -z-10"></div>
+      {/* Semi-transparent overlay for better text readability */}
+      <div className="fixed inset-0 bg-white/30 backdrop-blur-[2px] -z-10"></div>
       
       {/* Stars container */}
       <div id="stars-container" className="fixed inset-0 pointer-events-none z-0"></div>
@@ -87,7 +90,7 @@ const Index = () => {
             </span>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in text-[#5d4037]">
             Elin's 8<sup>th</sup> Birthday Party
           </h1>
           
@@ -106,7 +109,7 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
           <MapLocation 
             address={partyAddress} 
-            className="order-2 md:order-1"
+            className="order-2 md:order-1 glass"
           />
           
           <div className="space-y-8 order-1 md:order-2">
