@@ -31,6 +31,7 @@ exports.handler = async (event) => {
   try {
     const data = JSON.parse(event.body);
     console.log("Update data received:", data);
+    console.log("id:", id)
     
     // Pass the string ID to the FQL query
     const result = await client.query(fql`
@@ -55,7 +56,8 @@ exports.handler = async (event) => {
     console.error('Fauna Error:', {
       message: error.message,
       name: error.name,
-      stack: error.stack
+      stack: error.stack,
+      raw: error
     });
     return {
       statusCode: error.status || 500,
@@ -63,7 +65,8 @@ exports.handler = async (event) => {
       body: JSON.stringify({ 
         error: error.message,
         name: error.name,
-        details: error.stack
+        details: error.stack,
+        raw: error
       })
     };
   }
