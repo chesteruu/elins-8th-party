@@ -21,14 +21,12 @@ exports.handler = async (event) => {
   try {
     const result = await client.query(fql`
       guests.byId(${id}).update({
-        data: {
-          name: ${data.name},
-          email: ${data.email},
-          numberOfGuests: ${data.numberOfGuests},
-          message: ${data.message},
-          confirmed: ${data.confirmed},
-          attending: ${data.attending}
-        }
+        name: ${data.name},
+        email: ${data.email},
+        numberOfGuests: ${data.numberOfGuests},
+        message: ${data.message},
+        confirmed: ${data.confirmed},
+        attending: ${data.attending}
       })
     `);
     
