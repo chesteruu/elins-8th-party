@@ -21,8 +21,14 @@ class GuestService {
   
   async getGuests(): Promise<Guest[]> {
     try {
-      const response = await axios.get(`${this.API_BASE}/getGuests`);
-      return response.data;
+      const response = await axios.get('/.netlify/functions/getGuests');
+      // Handle both array and {data: []} formats
+      if (Array.isArray(response.data)) {
+        return response.data;
+      } else if (response.data && Array.isArray(response.data.data)) {
+        return response.data.data;
+      }
+      return [];
     } catch (error) {
       console.error('Error fetching guests:', error);
       return [];

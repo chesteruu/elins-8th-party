@@ -30,10 +30,13 @@ exports.handler = async (event) => {
 
     console.log('Query result:', result); // Debug log
 
+    // Extract the nested data array from the result
+    const guestsArray = result.data && result.data.data ? result.data.data : [];
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(result.data || [])
+      body: JSON.stringify(guestsArray)
     };
   } catch (error) {
     // More detailed error logging
