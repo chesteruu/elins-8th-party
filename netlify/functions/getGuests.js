@@ -1,13 +1,7 @@
-const faunadb = require('faunadb');
-const q = faunadb.query;
+const { Client, fql } = require('fauna');
 
-const client = new faunadb.Client({
+const client = new Client({
   secret: process.env.FAUNA_SECRET_KEY,
-  domain: 'db.fauna.com',
-  scheme: 'https',
-  headers: {
-    'X-Fauna-Version': '9'
-  }
 });
 
 exports.handler = async (event) => {
@@ -19,15 +13,16 @@ exports.handler = async (event) => {
   };
 
   try {
-    const result = await client.query(
-      q.Map(
-        q.Paginate(q.Documents(q.Collection('guests'))),
-        q.Lambda(
-          'ref',
-          q.Select(['data'], q.Get(q.Var('ref')))
-        )
+    const result = await client.query(fql`
+      Collection.byName("guests").all().map(
+        (doc) => {
+          {
+            id: doc.id,
+            ...doc.data
+          }
+        }
       )
-    );
+    `);
 
     return {
       statusCode: 200,
@@ -38,17 +33,16 @@ exports.handler = async (event) => {
     console.error('Fauna Error:', {
       message: error.message,
       description: error.description,
-      code: error.requestResult?.statusCode,
-      headers: error.requestResult?.responseHeaders
+      code: error.status
     });
 
     return {
-      statusCode: error.requestResult?.statusCode || 500,
+      statusCode: error.status || 500,
       headers,
       body: JSON.stringify({
         error: error.message,
         description: error.description,
-        code: error.requestResult?.statusCode
+        code: error.status
       })
     };
   }
