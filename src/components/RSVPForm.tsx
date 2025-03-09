@@ -35,46 +35,54 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       
       if (location.search) {
         const params = new URLSearchParams(location.search);
-        
         const idParam = params.get('id');
-        const nameParam = params.get('name');
-        const guestsParam = params.get('guests');
         
-        console.log("URL Parameters:", { idParam, nameParam, guestsParam });
+        console.log("URL Parameters:", { idParam });
         
         let isValidLink = false;
         let guestData: any = {};
         
         if (idParam) {
           try {
+            console.log("Looking for guest with ID:", idParam);
             // Use the async findGuestById method
             const guest = await guestService.findGuestById(idParam);
-            console.log("Looking for guest with ID:", idParam);
             console.log("Found guest:", guest);
             
             if (guest) {
+              console.log("Guest found, setting existing guest:", guest);
               setExistingGuest(guest);
               guestData = {
                 id: guest.id,
-                name: guest.name,
+                name: guest.name || '',
                 guests: guest.numberOfGuests || 1,
                 message: guest.message || '',
                 attending: guest.attending === false ? false : true,
               };
               setNameReadOnly(true);
               isValidLink = true;
+              console.log("Link is valid based on guest ID");
+            } else {
+              console.log("No guest found with ID:", idParam);
             }
           } catch (error) {
             console.error("Error fetching guest:", error);
           }
-        } else if (nameParam) {
-          guestData = { 
-            name: nameParam,
-            // Use the guests parameter from the URL or default to 1
-            guests: guestsParam ? parseInt(guestsParam) : 1
-          };
-          setNameReadOnly(true);
-          isValidLink = true;
+        } else {
+          // For backward compatibility, we'll still support name and guests parameters
+          const nameParam = params.get('name');
+          const guestsParam = params.get('guests');
+          
+          if (nameParam) {
+            console.log("Using name parameter:", nameParam);
+            guestData = { 
+              name: nameParam,
+              guests: guestsParam ? parseInt(guestsParam) : 1
+            };
+            setNameReadOnly(true);
+            isValidLink = true;
+            console.log("Link is valid based on name parameter");
+          }
         }
         
         if (isValidLink) {
