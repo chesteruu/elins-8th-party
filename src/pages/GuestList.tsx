@@ -153,15 +153,33 @@ We can't wait to celebrate with you! 🎉🎁✨
     });
   };
   
-  const clearAllGuests = () => {
-    guestService.clearAllGuests();
-    setGuests([]);
-    setShowClearConfirmation(false);
+  const clearAllGuests = async () => {
+    try {
+      const success = await guestService.clearAllGuests();
+      
+      if (success) {
+        setGuests([]);
+        toast({
+          title: "Guest list cleared",
+          description: "All guests have been removed from the list",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to clear guest list",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error clearing guests:", error);
+      toast({
+        title: "Error",
+        description: "Failed to clear guest list",
+        variant: "destructive",
+      });
+    }
     
-    toast({
-      title: "Guest list cleared",
-      description: "All guests have been removed from the list",
-    });
+    setShowClearConfirmation(false);
   };
   
   const confirmDeleteGuest = (guest: Guest) => {
@@ -169,19 +187,39 @@ We can't wait to celebrate with you! 🎉🎁✨
     setShowDeleteConfirmation(true);
   };
   
-  const deleteGuest = () => {
+  const deleteGuest = async () => {
     if (!guestToDelete) return;
     
-    const updatedGuests = guests.filter(g => g.id !== guestToDelete.id);
-    localStorage.setItem(guestService.STORAGE_KEY, JSON.stringify(updatedGuests));
-    setGuests(updatedGuests);
+    try {
+      const success = await guestService.deleteGuest(guestToDelete.id);
+      
+      if (success) {
+        // Remove from local state
+        const updatedGuests = guests.filter(g => g.id !== guestToDelete.id);
+        setGuests(updatedGuests);
+        
+        toast({
+          title: "Guest deleted",
+          description: `${guestToDelete.name} has been removed from the guest list`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete guest",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting guest:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete guest",
+        variant: "destructive",
+      });
+    }
+    
     setShowDeleteConfirmation(false);
     setGuestToDelete(null);
-    
-    toast({
-      title: "Guest deleted",
-      description: `${guestToDelete.name} has been removed from the guest list`,
-    });
   };
   
   const attendingGuests = guests.filter(g => g.confirmed && g.attending === true);
