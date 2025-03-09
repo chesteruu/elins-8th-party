@@ -13,7 +13,6 @@ export interface Guest {
 // In a real app, this would use a database. Using localStorage for demo purposes
 class GuestService {
   readonly API_BASE = '/.netlify/functions';
-  readonly PASSWORD_KEY = 'elinBirthdayPassword';
   readonly PARTY_DATE = '2025-04-25';
   readonly PARTY_TIME = '16:00 -> 17:45';
   readonly PARTY_LOCATION = 'SMASH Täby, Täby Centrum';
@@ -158,15 +157,14 @@ We can't wait to celebrate with you! 🎉🎁✨`;
   }
   
   getPassword(): string | null {
-    return localStorage.getItem(this.PASSWORD_KEY);
+    // Only use the environment variable
+    return import.meta.env.VITE_ADMIN_PASSWORD || null;
   }
   
   verifyPassword(password: string): boolean {
     const storedPassword = this.getPassword();
     if (!storedPassword) {
-      // Set default password if none exists
-      this.setPassword("2025042808");
-      return password === "2025042808";
+      return false;
     }
     return password === storedPassword;
   }
