@@ -1,14 +1,22 @@
 # Build settings
 [build]
+  command = "npm install && cd netlify/functions && npm install && cd ../.. && npm run build"
   publish = "dist"
-  command = "npm run build"
   functions = "netlify/functions"
 
-# Add this redirect rule for client-side routing
+# First, handle function calls
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+# Then, handle SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
 
 # Security headers
 [[headers]]
@@ -41,3 +49,6 @@
   for = "/*.{woff,woff2}"
   [headers.values]
     Cache-Control = "public, max-age=31536000"
+
+[build.environment]
+  NODE_VERSION = "18"
