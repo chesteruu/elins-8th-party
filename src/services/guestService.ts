@@ -35,13 +35,26 @@ class GuestService {
     }
   }
   
-  async findGuestById(id: string): Promise<Guest | undefined> {
+  async findGuestById(id: string): Promise<Guest | null> {
     try {
-      const response = await axios.get(`${this.API_BASE}/getGuest?id=${id}`);
-      return response.data;
+      const response = await axios.get(`/.netlify/functions/getGuest?id=${id}`);
+      
+      if (response.data && response.data.id) {
+        // Return the guest data in the expected format
+        return {
+          id: response.data.id,
+          name: response.data.name,
+          email: response.data.email,
+          numberOfGuests: response.data.numberOfGuests,
+          message: response.data.message,
+          confirmed: response.data.confirmed,
+          attending: response.data.attending
+        };
+      }
+      return null;
     } catch (error) {
-      console.error('Error finding guest:', error);
-      return undefined;
+      console.error('Error finding guest by ID:', error);
+      return null;
     }
   }
   
