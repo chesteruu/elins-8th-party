@@ -56,7 +56,9 @@ exports.handler = async (event) => {
       let currentData = doc.data
       
       doc.update({
-        ${Object.entries(updateData).map(([key, value]) => `${key}: ${value}`).join(',')}
+        data: {
+          ${Object.entries(updateData).map(([key, value]) => `${key}: ${value}`).join(',')}
+        }
       })
     `);
     
