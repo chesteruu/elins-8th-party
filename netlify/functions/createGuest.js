@@ -20,12 +20,14 @@ exports.handler = async (event) => {
   try {
     const result = await client.query(fql`
       guests.create({
-        name: ${data.name},
-        email: ${data.email || null},
-        numberOfGuests: ${data.numberOfGuests},
-        message: ${data.message || ''},
-        confirmed: ${data.confirmed || false},
-        attending: ${data.attending || null}
+        data: {
+          name: ${data.name},
+          email: ${data.email || null},
+          numberOfGuests: ${data.numberOfGuests},
+          message: ${data.message || ''},
+          confirmed: ${data.confirmed || false},
+          attending: ${data.attending || null}
+        }
       })
     `);
     

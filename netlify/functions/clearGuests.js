@@ -17,7 +17,9 @@ exports.handler = async (event) => {
 
   try {
     await client.query(fql`
-      guests.all().forEach(doc => doc.delete())
+      guests.all().forEach(doc => {
+        doc.delete()
+      })
     `);
     
     return {
