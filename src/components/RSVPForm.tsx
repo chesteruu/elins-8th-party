@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -39,12 +38,10 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       
       console.log("URL Parameters:", { idParam, nameParam, guestsParam });
       
-      // Initialize with invalid link assumption
       let isValidLink = false;
       let guestData: any = {};
       
       if (idParam) {
-        // Try to find existing guest by ID
         const guest = guestService.findGuestById(idParam);
         console.log("Looking for guest with ID:", idParam);
         console.log("Found guest:", guest);
@@ -59,21 +56,16 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
             attending: guest.attending === false ? false : true,
           };
           setNameReadOnly(true);
-          isValidLink = true; // Valid if guest exists
+          isValidLink = true;
         }
       } else if (nameParam) {
-        // If no ID but has name, this is from a valid invite
-        guestData = { name: nameParam };
+        guestData = { 
+          name: nameParam,
+          // Use the guests parameter from the URL or default to 1
+          guests: guestsParam ? parseInt(guestsParam) : 1
+        };
         setNameReadOnly(true);
-        
-        if (guestsParam) {
-          const guestCount = parseInt(guestsParam);
-          if (!isNaN(guestCount)) {
-            guestData = { ...guestData, guests: guestCount };
-          }
-        }
-        
-        isValidLink = true; // Valid if it has name parameter
+        isValidLink = true;
       }
       
       if (isValidLink) {
@@ -81,7 +73,6 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
         setFormData(prev => ({ ...prev, ...guestData }));
         setValidLink(true);
       } else {
-        // Invalid link
         console.log("Invalid link detected");
         toast({
           title: "Invalid invitation link",
@@ -91,7 +82,6 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
         navigate('/');
       }
     } else {
-      // If no URL parameters, redirect to home page
       console.log("No URL parameters, redirecting to home");
       navigate('/');
     }
@@ -232,18 +222,15 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <label htmlFor="guests" className="text-sm font-medium">Number of Guests</label>
+                  <span className="text-xs text-muted-foreground">(from invitation)</span>
                 </div>
                 <input
                   id="guests"
                   name="guests"
                   type="number"
-                  min="1"
-                  max="10"
                   value={formData.guests}
-                  onChange={handleInputChange}
-                  className="w-full p-3 rounded-md border border-input bg-background"
-                  placeholder="1"
-                  required
+                  className="w-full p-3 rounded-md border border-input bg-muted cursor-not-allowed"
+                  readOnly
                 />
                 <p className="text-xs text-muted-foreground mt-1">Including yourself</p>
               </div>
