@@ -52,8 +52,12 @@ We can't wait to celebrate with you! 🎉🎁✨
   const loadGuests = async () => {
     setLoading(true);
     try {
-      // Initialize default password if needed
-      if (!guestService.getPassword()) {
+      // Initialize password from environment variable if available
+      const envPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+      if (envPassword && !guestService.getPassword()) {
+        guestService.setPassword(envPassword);
+      } else if (!guestService.getPassword()) {
+        // Fallback to default password only if no env variable and no stored password
         guestService.setPassword('2025042808');
       }
       
