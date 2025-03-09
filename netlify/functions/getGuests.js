@@ -3,7 +3,11 @@ const q = faunadb.query;
 
 const client = new faunadb.Client({
   secret: process.env.FAUNA_SECRET_KEY,
-  domain: 'db.fauna.com'
+  domain: 'db.fauna.com',
+  scheme: 'https',
+  headers: {
+    'X-Fauna-Version': '9'
+  }
 });
 
 exports.handler = async (event) => {
@@ -16,33 +20,26 @@ exports.handler = async (event) => {
 
   try {
     const result = await client.query(
-      q.Let(
-        {
-          docs: q.Documents(q.Collection('guests')),
-          all: q.Map(
-            q.Paginate(q.Var('docs'), { size: 100 }),
-            q.Lambda('ref', q.Get(q.Var('ref')))
-          )
-        },
-        q.Var('all')
+      q.Map(
+        q.Paginate(q.Documents(q.Collection('guests'))),
+        q.Lambda(
+          'ref',
+          q.Select(['data'], q.Get(q.Var('ref')))
+        )
       )
     );
 
-    const guests = (result.data || []).map(doc => ({
-      id: doc.ref.id,
-      ...doc.data
-    }));
-    
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(guests)
+      body: JSON.stringify(result.data || [])
     };
   } catch (error) {
     console.error('Fauna Error:', {
       message: error.message,
       description: error.description,
-      code: error.requestResult?.statusCode
+      code: error.requestResult?.statusCode,
+      headers: error.requestResult?.responseHeaders
     });
 
     return {
