@@ -7,33 +7,33 @@ interface MapLocationProps {
   className?: string;
 }
 
-const MapLocation: React.FC<MapLocationProps> = ({ address, className }) => {
-  // Create Google Maps URL with the address
-  const encodedAddress = encodeURIComponent(address);
-  const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodedAddress}`;
-  
+const MapLocation = ({ address, className }: MapLocationProps) => {
   return (
-    <div className={cn("w-full h-full flex flex-col space-y-4", className)}>
-      <div className="glass rounded-xl overflow-hidden w-full flex-1">
-        <iframe
-          title="Party Location"
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          loading="lazy"
-          allowFullScreen
-          referrerPolicy="no-referrer-when-downgrade"
-          src={mapUrl}
-        />
-      </div>
+    <div className={cn(
+      "relative overflow-hidden rounded-xl border border-accent/20 glass", 
+      className
+    )}>
+      <iframe
+        title="Party Location"
+        src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(address)}`}
+        className="w-full aspect-[4/3] rounded-xl"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
       
       <a
-        href={`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`}
+        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full inline-flex items-center justify-center gap-2 glass rounded-full px-6 py-3 text-base hover:bg-accent/10 transition-colors border border-accent/20"
+        className="absolute bottom-4 right-4 px-4 py-2 rounded-full 
+          bg-red-500/40 hover:bg-red-500/60 
+          text-white font-medium 
+          backdrop-blur-sm 
+          transition-colors 
+          flex items-center gap-2 
+          shadow-lg"
       >
-        <MapPin className="h-5 w-5" />
+        <MapPin className="h-4 w-4" />
         Get Directions
       </a>
     </div>
