@@ -41,19 +41,33 @@ class GuestService {
       const response = await axios.get(`/.netlify/functions/getGuest?id=${id}`);
       console.log("Service: API response:", response.data);
       
-      if (response.data && response.data.id) {
+      // Check if we got a valid response
+      if (!response.data) {
+        console.log("Service: No data in response");
+        return null;
+      }
+      
+      // Log the structure of the response
+      console.log("Service: Response structure:", Object.keys(response.data));
+      
+      // Check if the response has an ID
+      if (response.data.id) {
+        console.log("Service: Found guest with ID:", response.data.id);
+        
         // Return the guest data in the expected format
         return {
           id: response.data.id,
-          name: response.data.name,
+          name: response.data.name || '',
           email: response.data.email || '',
           numberOfGuests: response.data.numberOfGuests || 1,
           message: response.data.message || '',
           confirmed: response.data.confirmed || false,
           attending: response.data.attending === false ? false : null
         };
+      } else {
+        console.log("Service: Response missing ID");
+        return null;
       }
-      return null;
     } catch (error) {
       console.error('Error finding guest by ID:', error);
       return null;

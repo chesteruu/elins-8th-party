@@ -30,29 +30,31 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
 
   // Parse prefilled data from URL and validate the link
   useEffect(() => {
+    let isMounted = true; // Flag to prevent state updates after unmount
+    
     const fetchGuestData = async () => {
-      setLoading(true);
-      
-      if (location.search) {
-        const params = new URLSearchParams(location.search);
-        const idParam = params.get('id');
+      try {
+        setLoading(true);
         
-        console.log("URL Parameters:", { idParam });
-        
-        let isValidLink = false;
-        let guestData: any = {};
-        
-        if (idParam) {
-          try {
+        if (location.search) {
+          const params = new URLSearchParams(location.search);
+          const idParam = params.get('id');
+          
+          console.log("URL Parameters:", { idParam });
+          
+          if (idParam) {
             console.log("Looking for guest with ID:", idParam);
             // Use the async findGuestById method
             const guest = await guestService.findGuestById(idParam);
             console.log("Found guest:", guest);
             
+            // Check if component is still mounted before updating state
+            if (!isMounted) return;
+            
             if (guest) {
               console.log("Guest found, setting existing guest:", guest);
               setExistingGuest(guest);
-              guestData = {
+              const guestData = {
                 id: guest.id,
                 name: guest.name || '',
                 guests: guest.numberOfGuests || 1,
@@ -60,53 +62,57 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
                 attending: guest.attending === false ? false : true,
               };
               setNameReadOnly(true);
-              isValidLink = true;
+              setFormData(prev => ({ ...prev, ...guestData }));
+              setValidLink(true);
               console.log("Link is valid based on guest ID");
             } else {
               console.log("No guest found with ID:", idParam);
+              toast({
+                title: "Invalid invitation link",
+                description: "This link appears to be invalid or expired.",
+                variant: "destructive",
+              });
+              navigate('/');
             }
-          } catch (error) {
-            console.error("Error fetching guest:", error);
+          } else {
+            console.log("No ID parameter in URL");
+            toast({
+              title: "Invalid invitation link",
+              description: "This link appears to be invalid or expired.",
+              variant: "destructive",
+            });
+            navigate('/');
           }
         } else {
-          // For backward compatibility, we'll still support name and guests parameters
-          const nameParam = params.get('name');
-          const guestsParam = params.get('guests');
-          
-          if (nameParam) {
-            console.log("Using name parameter:", nameParam);
-            guestData = { 
-              name: nameParam,
-              guests: guestsParam ? parseInt(guestsParam) : 1
-            };
-            setNameReadOnly(true);
-            isValidLink = true;
-            console.log("Link is valid based on name parameter");
-          }
-        }
-        
-        if (isValidLink) {
-          console.log("Valid link detected, setting form data:", guestData);
-          setFormData(prev => ({ ...prev, ...guestData }));
-          setValidLink(true);
-        } else {
-          console.log("Invalid link detected");
-          toast({
-            title: "Invalid invitation link",
-            description: "This link appears to be invalid or expired.",
-            variant: "destructive",
-          });
+          console.log("No URL parameters, redirecting to home");
           navigate('/');
         }
-      } else {
-        console.log("No URL parameters, redirecting to home");
+      } catch (error) {
+        console.error("Error fetching guest:", error);
+        
+        // Check if component is still mounted before updating state
+        if (!isMounted) return;
+        
+        toast({
+          title: "Error",
+          description: "There was a problem loading your invitation.",
+          variant: "destructive",
+        });
         navigate('/');
+      } finally {
+        // Check if component is still mounted before updating state
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      
-      setLoading(false);
     };
     
     fetchGuestData();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
   }, [location.search, navigate, toast]);
 
   const handleAttendingChange = (attending: boolean) => {
