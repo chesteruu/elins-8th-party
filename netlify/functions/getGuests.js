@@ -18,12 +18,12 @@ exports.handler = async (event) => {
       guests.all().map(x => {
         {
           id: x.id,
-          name: x.values.data.name,
-          email: x.values.data.email,
-          numberOfGuests: x.values.data.numberOfGuests,
-          message: x.values.data.message,
-          confirmed: x.values.data.confirmed,
-          attending: x.values.data.attending
+          name: x.name,
+          email: x.email,
+          numberOfGuests: x.numberOfGuests,
+          message: x.message,
+          confirmed: x.confirmed,
+          attending: x.attending
         }
       })
     `);
