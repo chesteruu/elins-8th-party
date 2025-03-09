@@ -2,6 +2,7 @@
 [build]
   publish = "dist"
   command = "npm run build"
+  functions = "netlify/functions"
 
 # Add this redirect rule for client-side routing
 [[redirects]]

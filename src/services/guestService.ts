@@ -1,3 +1,4 @@
+import axios from 'axios';
 
 export interface Guest {
   id: string;
@@ -11,68 +12,76 @@ export interface Guest {
 
 // In a real app, this would use a database. Using localStorage for demo purposes
 class GuestService {
-  readonly STORAGE_KEY = 'elinBirthdayGuests';
+  readonly API_BASE = '/.netlify/functions';
   readonly PASSWORD_KEY = 'elinBirthdayPassword';
   readonly PARTY_DATE = '2025-04-25';
   readonly PARTY_TIME = '16:00 -> 17:45';
   readonly PARTY_LOCATION = 'SMASH Täby, Täby Centrum';
   readonly PARTY_ADDRESS = 'Stora Marknadsvägen 15, 183 70 Täby';
   
-  getGuests(): Guest[] {
-    const storedGuests = localStorage.getItem(this.STORAGE_KEY);
-    return storedGuests ? JSON.parse(storedGuests) : [];
-  }
-  
-  addGuest(guest: Omit<Guest, 'id'>): Guest {
-    const guests = this.getGuests();
-    const newGuest = {
-      ...guest,
-      id: crypto.randomUUID(),
-    };
-    
-    guests.push(newGuest);
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(guests));
-    return newGuest;
-  }
-  
-  updateGuest(id: string, updates: Partial<Guest>): Guest | null {
-    const guests = this.getGuests();
-    const index = guests.findIndex(g => g.id === id);
-    
-    if (index === -1) return null;
-    
-    const updatedGuest = { ...guests[index], ...updates };
-    guests[index] = updatedGuest;
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(guests));
-    
-    return updatedGuest;
-  }
-  
-  deleteGuest(id: string): boolean {
-    const guests = this.getGuests();
-    const filteredGuests = guests.filter(g => g.id !== id);
-    
-    if (filteredGuests.length === guests.length) {
-      return false; // No guest was removed
+  async getGuests(): Promise<Guest[]> {
+    try {
+      const response = await axios.get(`${this.API_BASE}/getGuests`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching guests:', error);
+      return [];
     }
-    
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filteredGuests));
-    return true;
   }
   
-  findGuestById(id: string): Guest | undefined {
-    const guests = this.getGuests();
-    console.log("Finding guest by ID:", id);
-    console.log("All guests in storage:", guests);
-    
-    const guest = guests.find(g => g.id === id);
-    console.log("Found guest:", guest);
-    return guest;
+  async findGuestById(id: string): Promise<Guest | undefined> {
+    try {
+      const response = await axios.get(`${this.API_BASE}/getGuest?id=${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error finding guest:', error);
+      return undefined;
+    }
+  }
+  
+  async updateGuest(id: string, updates: Partial<Guest>): Promise<Guest | null> {
+    try {
+      const response = await axios.put(`${this.API_BASE}/updateGuest?id=${id}`, updates);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating guest:', error);
+      return null;
+    }
+  }
+  
+  async addGuest(guest: Omit<Guest, 'id'>): Promise<Guest> {
+    try {
+      const response = await axios.post(`${this.API_BASE}/createGuest`, guest);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating guest:', error);
+      throw error;
+    }
+  }
+  
+  async deleteGuest(id: string): Promise<boolean> {
+    try {
+      await axios.delete(`${this.API_BASE}/deleteGuest?id=${id}`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting guest:', error);
+      return false;
+    }
+  }
+  
+  async clearAllGuests(): Promise<boolean> {
+    try {
+      await axios.delete(`${this.API_BASE}/clearGuests`);
+      return true;
+    } catch (error) {
+      console.error('Error clearing guests:', error);
+      return false;
+    }
   }
   
   // Create invitation link with pre-filled data
   createInvitationLink(guest: Partial<Guest> & { id?: string }): string {
-    const baseUrl = window.location.origin;
+    const baseUrl = 'https://0011.nu';
     const params = new URLSearchParams();
     
     if (guest.id) {
@@ -106,11 +115,6 @@ You're invited to a fun-filled celebration for Elin's 8th birthday! 🎊 Come jo
 RSVP: Please confirm your attendance by clicking the link: ${link}
 
 We can't wait to celebrate with you! 🎉🎁✨`;
-  }
-  
-  // Clear all guests
-  clearAllGuests(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
   }
   
   // Password protection methods

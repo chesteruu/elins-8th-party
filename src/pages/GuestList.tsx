@@ -170,6 +170,34 @@ We can't wait to celebrate with you! 🎉🎁✨
   const pendingGuests = guests.filter(g => !g.confirmed || g.attending === null);
   const totalAttending = attendingGuests.reduce((sum, g) => sum + g.numberOfGuests, 0);
   
+  // Add delete button to each guest row
+  const handleDeleteGuest = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this invitation?')) {
+      const success = await guestService.deleteGuest(id);
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Invitation deleted successfully",
+        });
+        // Refresh your guest list here
+      }
+    }
+  };
+
+  // Add clear all button
+  const handleClearAll = async () => {
+    if (window.confirm('Are you sure you want to delete ALL invitations? This cannot be undone!')) {
+      const success = await guestService.clearAllGuests();
+      if (success) {
+        toast({
+          title: "Success",
+          description: "All invitations have been deleted",
+        });
+        // Refresh your guest list here
+      }
+    }
+  };
+  
   if (showPasswordDialog) {
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center p-4">
@@ -378,7 +406,7 @@ We can't wait to celebrate with you! 🎉🎁✨
               <Button variant="outline" onClick={() => setShowClearConfirmation(false)}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={clearAllGuests}>
+              <Button variant="destructive" onClick={handleClearAll}>
                 Yes, Clear List
               </Button>
             </DialogFooter>
