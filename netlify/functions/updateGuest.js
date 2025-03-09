@@ -24,18 +24,24 @@ exports.handler = async (event) => {
     };
   }
 
+  // Explicitly convert ID to string
+  const stringId = String(id);
+  console.log("Updating guest with ID:", stringId, "Type:", typeof stringId);
+
   try {
     const data = JSON.parse(event.body);
     console.log("Update data received:", data);
     
-    // Build the FQL query dynamically
+    // Pass the string ID to the FQL query
     const result = await client.query(fql`
-      guests.byId("${id}").update({
-          message: ${data.message},
-          confirmed: ${data.confirmed},
-          attending: ${data.attending}
+      guests.byId(${stringId}).update({
+        message: ${data.message !== undefined ? data.message : null},
+        confirmed: ${data.confirmed !== undefined ? data.confirmed : false},
+        attending: ${data.attending !== undefined ? data.attending : null}
       })
     `);
+    
+    console.log("Update result:", JSON.stringify(result, null, 2));
     
     return {
       statusCode: 200,
@@ -49,8 +55,7 @@ exports.handler = async (event) => {
     console.error('Fauna Error:', {
       message: error.message,
       name: error.name,
-      stack: error.stack,
-      raw: error
+      stack: error.stack
     });
     return {
       statusCode: error.status || 500,
@@ -58,8 +63,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({ 
         error: error.message,
         name: error.name,
-        details: error.stack,
-        raw: error
+        details: error.stack
       })
     };
   }
