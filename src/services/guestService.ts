@@ -11,12 +11,12 @@ export interface Guest {
 
 // In a real app, this would use a database. Using localStorage for demo purposes
 class GuestService {
-  private readonly STORAGE_KEY = 'elinBirthdayGuests';
-  private readonly PASSWORD_KEY = 'elinBirthdayPassword';
-  private readonly PARTY_DATE = '2025-04-25';
-  private readonly PARTY_TIME = '16:00';
-  private readonly PARTY_LOCATION = 'SMASH Täby, Täby Centrum';
-  private readonly PARTY_ADDRESS = 'Stora Marknadsvägen 15, 183 70 Täby';
+  readonly STORAGE_KEY = 'elinBirthdayGuests';
+  readonly PASSWORD_KEY = 'elinBirthdayPassword';
+  readonly PARTY_DATE = '2025-04-25';
+  readonly PARTY_TIME = '16:00 -> 17:45';
+  readonly PARTY_LOCATION = 'SMASH Täby, Täby Centrum';
+  readonly PARTY_ADDRESS = 'Stora Marknadsvägen 15, 183 70 Täby';
   
   getGuests(): Guest[] {
     const storedGuests = localStorage.getItem(this.STORAGE_KEY);
@@ -46,6 +46,18 @@ class GuestService {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(guests));
     
     return updatedGuest;
+  }
+  
+  deleteGuest(id: string): boolean {
+    const guests = this.getGuests();
+    const filteredGuests = guests.filter(g => g.id !== id);
+    
+    if (filteredGuests.length === guests.length) {
+      return false; // No guest was removed
+    }
+    
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filteredGuests));
+    return true;
   }
   
   findGuestById(id: string): Guest | undefined {

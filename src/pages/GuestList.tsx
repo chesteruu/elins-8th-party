@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Copy, Home, Check, ChevronLeft, UserPlus, Users, Mail, Sparkles, X, Send, Trash2 } from 'lucide-react';
@@ -20,6 +19,8 @@ const GuestList = () => {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -141,6 +142,26 @@ We can't wait to celebrate with you! 🎉🎁✨
     toast({
       title: "Guest list cleared",
       description: "All guests have been removed from the list",
+    });
+  };
+  
+  const confirmDeleteGuest = (guest: Guest) => {
+    setGuestToDelete(guest);
+    setShowDeleteConfirmation(true);
+  };
+  
+  const deleteGuest = () => {
+    if (!guestToDelete) return;
+    
+    const updatedGuests = guests.filter(g => g.id !== guestToDelete.id);
+    localStorage.setItem(guestService.STORAGE_KEY, JSON.stringify(updatedGuests));
+    setGuests(updatedGuests);
+    setShowDeleteConfirmation(false);
+    setGuestToDelete(null);
+    
+    toast({
+      title: "Guest deleted",
+      description: `${guestToDelete.name} has been removed from the guest list`,
     });
   };
   
@@ -364,6 +385,26 @@ We can't wait to celebrate with you! 🎉🎁✨
           </DialogContent>
         </Dialog>
         
+        {/* Delete confirmation dialog */}
+        <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Guest</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to remove {guestToDelete?.name} from the guest list? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowDeleteConfirmation(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={deleteGuest}>
+                Delete Guest
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
         {/* Guest lists */}
         <div className="space-y-8">
           {attendingGuests.length > 0 && (
@@ -406,6 +447,13 @@ We can't wait to celebrate with you! 🎉🎁✨
                           ) : (
                             <Copy className="h-4 w-4" />
                           )}
+                        </button>
+                        <button
+                          onClick={() => confirmDeleteGuest(guest)}
+                          className="p-2 rounded-full hover:bg-accent/10 transition-colors text-red-500"
+                          title="Delete guest"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
@@ -452,6 +500,13 @@ We can't wait to celebrate with you! 🎉🎁✨
                             <Copy className="h-4 w-4" />
                           )}
                         </button>
+                        <button
+                          onClick={() => confirmDeleteGuest(guest)}
+                          className="p-2 rounded-full hover:bg-accent/10 transition-colors text-red-500"
+                          title="Delete guest"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -496,6 +551,13 @@ We can't wait to celebrate with you! 🎉🎁✨
                           ) : (
                             <Copy className="h-4 w-4" />
                           )}
+                        </button>
+                        <button
+                          onClick={() => confirmDeleteGuest(guest)}
+                          className="p-2 rounded-full hover:bg-accent/10 transition-colors text-red-500"
+                          title="Delete guest"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>

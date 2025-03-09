@@ -150,6 +150,11 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
     
     // Set appropriate confirmation step
     setStep(formData.attending ? 'confirmed' : 'declined');
+    
+    // Redirect to home page after a short delay
+    setTimeout(() => {
+      navigate('/');
+    }, 3000);
   };
 
   // If the link is invalid, don't render the form at all
