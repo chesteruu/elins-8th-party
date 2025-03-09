@@ -28,21 +28,6 @@ exports.handler = async (event) => {
     const data = JSON.parse(event.body);
     console.log("Update data received:", data);
     
-    // Create an update object with only the fields that are defined
-    const updateData = {};
-    
-    // Only add fields that are defined and not null/undefined
-    if (data.name !== undefined && data.name !== null) updateData.name = data.name;
-    if (data.email !== undefined && data.email !== null) updateData.email = data.email;
-    if (data.numberOfGuests !== undefined && data.numberOfGuests !== null) updateData.numberOfGuests = data.numberOfGuests;
-    if (data.message !== undefined && data.message !== null) updateData.message = data.message;
-    if (data.confirmed !== undefined && data.confirmed !== null) updateData.confirmed = data.confirmed;
-    if (data.attending !== undefined) updateData.attending = data.attending; // Allow null for attending
-    updateData.id = id;
-    updateData.coll = 'guests'
-    
-    console.log("Sanitized update data:", updateData);
-    
     // Only proceed if we have fields to update
     if (Object.keys(updateData).length === 0) {
       return {
@@ -57,11 +42,9 @@ exports.handler = async (event) => {
       guests.byId(${id})?.updateData({
           id: "${id}",
           coll: guests,
-          name: ${updateData.name},
-          numberOfGuests: ${updateData.numberOfGuests},
-          message: ${updateData.message},
-          confirmed: ${updateData.confirmed},
-          attending: ${updateData.attending}
+          message: "${data.message}",
+          confirmed: ${data.confirmed},
+          attending: ${data.attending}
       })
     `);
     
