@@ -29,16 +29,21 @@ exports.handler = async (event) => {
     console.log("Update data received:", data);
     console.log("id:", id)
 
-    stringId = "424958963405029582"
+    const getGuest = await client.query(fql`
+      guests.byId(${id})
+    `);
+
+    console.log("Get guest result:", JSON.stringify(getGuest, null, 2));
     
     // Pass the string ID to the FQL query
     const result = await client.query(fql`
-      let guest = guests.byId(${stringId})
-      guest.updateData({
-        message: ${data.message !== undefined ? data.message : null},
-        confirmed: ${data.confirmed !== undefined ? data.confirmed : false},
-        attending: ${data.attending !== undefined ? data.attending : null}
-      })
+      guests.byId(${id}).update(
+        data: {
+          message: ${data.message !== undefined ? data.message : null},
+          confirmed: ${data.confirmed !== undefined ? data.confirmed : false},
+          attending: ${data.attending !== undefined ? data.attending : null}
+        }
+      )
     `);
     
     console.log("Update result:", JSON.stringify(result, null, 2));
