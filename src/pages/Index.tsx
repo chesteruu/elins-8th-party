@@ -129,17 +129,6 @@ const Index = () => {
         </div>
         
         {/* RSVP Section */}
-        <div className="max-w-2xl mx-auto mb-16">
-          <div className="text-center mb-8">
-            <div className="flex justify-center items-center gap-2 mb-4">
-              <CalendarCheck className="h-5 w-5 text-primary" />
-              <h2 className="text-2xl font-bold">RSVP</h2>
-            </div>
-          </div>
-          
-          <RSVPForm />
-        </div>
-        
         <div className="mt-16 text-center animate-fade-in animate-delay-500">
           <div className="inline-flex items-center gap-2 glass rounded-full px-6 py-3 mx-auto">
             <Sparkles className="h-4 w-4 text-primary" />

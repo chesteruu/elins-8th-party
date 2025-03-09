@@ -13,8 +13,8 @@ const MapLocation: React.FC<MapLocationProps> = ({ address, className }) => {
   const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodedAddress}`;
   
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="glass rounded-xl overflow-hidden aspect-video">
+    <div className={cn("w-full h-full flex flex-col space-y-4", className)}>
+      <div className="glass rounded-xl overflow-hidden w-full flex-1">
         <iframe
           title="Party Location"
           width="100%"
@@ -31,9 +31,9 @@ const MapLocation: React.FC<MapLocationProps> = ({ address, className }) => {
         href={`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 hover:bg-accent/10 transition-colors border border-accent/20"
+        className="w-full inline-flex items-center justify-center gap-2 glass rounded-full px-6 py-3 text-base hover:bg-accent/10 transition-colors border border-accent/20"
       >
-        <MapPin className="h-4 w-4" />
+        <MapPin className="h-5 w-5" />
         Get Directions
       </a>
     </div>
