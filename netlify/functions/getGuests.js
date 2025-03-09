@@ -17,12 +17,12 @@ exports.handler = async (event) => {
     const result = await client.query(fql`
       guests.all().map(x => {
         id: x.id,
-        name: x.values.name,
-        email: x.values.email,
-        numberOfGuests: x.values.numberOfGuests,
-        message: x.values.message,
-        confirmed: x.values.confirmed,
-        attending: x.values.attending
+        name: x.name,
+        email: x.email,
+        numberOfGuests: x.numberOfGuests,
+        message: x.message,
+        confirmed: x.confirmed,
+        attending: x.attending
       })
     `);
 
