@@ -74,8 +74,10 @@ We can't wait to celebrate with you! 🎉🎁✨
   };
   
   useEffect(() => {
-    loadGuests();
-  }, []);
+    if (!showPasswordDialog) {
+      loadGuests();
+    }
+  }, [showPasswordDialog]);
   
   const handlePasswordSubmit = () => {
     if (guestService.verifyPassword(password)) {
@@ -86,7 +88,7 @@ We can't wait to celebrate with you! 🎉🎁✨
     }
   };
   
-  const handleAddGuest = () => {
+  const handleAddGuest = async () => {
     if (!newGuest.name) {
       toast({
         title: "Name required",
@@ -96,23 +98,34 @@ We can't wait to celebrate with you! 🎉🎁✨
       return;
     }
     
-    const guest = guestService.addGuest({
-      name: newGuest.name,
-      email: newGuest.email,
-      numberOfGuests: newGuest.numberOfGuests,
-      confirmed: false,
-      message: '',
-      attending: null,
-    });
-    
-    setGuests([...guests, guest]);
-    setNewGuest({ name: '', email: '', numberOfGuests: 1 });
-    setShowAddForm(false);
-    
-    toast({
-      title: "Guest added",
-      description: "Guest has been added to the invitation list",
-    });
+    try {
+      const guest = await guestService.addGuest({
+        name: newGuest.name,
+        email: newGuest.email,
+        numberOfGuests: newGuest.numberOfGuests,
+        confirmed: false,
+        message: '',
+        attending: null,
+      });
+      
+      setNewGuest({ name: '', email: '', numberOfGuests: 1 });
+      setShowAddForm(false);
+      
+      toast({
+        title: "Guest added",
+        description: "Guest has been added to the invitation list",
+      });
+      
+      // Refresh the guest list
+      loadGuests();
+    } catch (error) {
+      console.error("Error adding guest:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add guest",
+        variant: "destructive",
+      });
+    }
   };
   
   const copyInvitationTemplate = async (guest: Guest) => {
@@ -158,11 +171,13 @@ We can't wait to celebrate with you! 🎉🎁✨
       const success = await guestService.clearAllGuests();
       
       if (success) {
-        setGuests([]);
         toast({
           title: "Guest list cleared",
           description: "All guests have been removed from the list",
         });
+        
+        // Refresh the guest list
+        loadGuests();
       } else {
         toast({
           title: "Error",
@@ -194,14 +209,13 @@ We can't wait to celebrate with you! 🎉🎁✨
       const success = await guestService.deleteGuest(guestToDelete.id);
       
       if (success) {
-        // Remove from local state
-        const updatedGuests = guests.filter(g => g.id !== guestToDelete.id);
-        setGuests(updatedGuests);
-        
         toast({
           title: "Guest deleted",
           description: `${guestToDelete.name} has been removed from the guest list`,
         });
+        
+        // Refresh the guest list
+        loadGuests();
       } else {
         toast({
           title: "Error",
