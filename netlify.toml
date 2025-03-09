@@ -75,5 +75,12 @@
     Content-Type = "image/svg+xml"
     Cache-Control = "public, max-age=31536000"
 
+# Add specific handling for lovable-uploads
+[[headers]]
+  for = "/lovable-uploads/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+    Content-Type = "image/png"
+
 [build.environment]
   NODE_VERSION = "18"
