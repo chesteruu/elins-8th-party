@@ -21,7 +21,7 @@ const MapLocation = ({ address, className }: MapLocationProps) => {
         referrerPolicy="no-referrer-when-downgrade"
       />
       
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none">
         <a
           href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`}
           target="_blank"
