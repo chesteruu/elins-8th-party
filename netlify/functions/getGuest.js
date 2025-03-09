@@ -14,17 +14,34 @@ exports.handler = async (event) => {
   const { id } = event.queryStringParameters;
   
   try {
+    if (!id) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: "Missing required parameter: id" })
+      };
+    }
+    
+    console.log("Looking up guest with ID:", id);
+    
     const result = await client.query(fql`
       guests.byId(${id})
     `);
     
+    console.log("Query result:", result);
+    
+    if (!result) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({ error: "Guest not found" })
+      };
+    }
+    
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ 
-        id: result.id,
-        ...result.data
-      })
+      body: JSON.stringify(result)
     };
   } catch (error) {
     console.error('Fauna Error:', {

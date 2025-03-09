@@ -37,18 +37,20 @@ class GuestService {
   
   async findGuestById(id: string): Promise<Guest | null> {
     try {
+      console.log("Service: Finding guest with ID:", id);
       const response = await axios.get(`/.netlify/functions/getGuest?id=${id}`);
+      console.log("Service: API response:", response.data);
       
       if (response.data && response.data.id) {
         // Return the guest data in the expected format
         return {
           id: response.data.id,
           name: response.data.name,
-          email: response.data.email,
-          numberOfGuests: response.data.numberOfGuests,
-          message: response.data.message,
-          confirmed: response.data.confirmed,
-          attending: response.data.attending
+          email: response.data.email || '',
+          numberOfGuests: response.data.numberOfGuests || 1,
+          message: response.data.message || '',
+          confirmed: response.data.confirmed || false,
+          attending: response.data.attending === false ? false : null
         };
       }
       return null;
