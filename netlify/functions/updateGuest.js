@@ -38,6 +38,8 @@ exports.handler = async (event) => {
     if (data.message !== undefined && data.message !== null) updateData.message = data.message;
     if (data.confirmed !== undefined && data.confirmed !== null) updateData.confirmed = data.confirmed;
     if (data.attending !== undefined) updateData.attending = data.attending; // Allow null for attending
+    updateData.id = id;
+    updateData.coll = 'guests'
     
     console.log("Sanitized update data:", updateData);
     
@@ -52,13 +54,8 @@ exports.handler = async (event) => {
     
     // Build the FQL query dynamically
     const result = await client.query(fql`
-      let doc = guests.byId(${id})
-      let currentData = doc.data
-      
-      doc.update({
-        data: {
+      guests.byId(${id})?.updateData({
           ${Object.entries(updateData).map(([key, value]) => `${key}: ${value}`).join(',')}
-        }
       })
     `);
     
