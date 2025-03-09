@@ -19,7 +19,7 @@ exports.handler = async (event) => {
 
   try {
     await client.query(fql`
-      guests.byId(${id}).delete()
+      guests.byId(${id})!.delete()
     `);
     
     return {
@@ -31,7 +31,8 @@ exports.handler = async (event) => {
     console.error('Fauna Error:', {
       message: error.message,
       name: error.name,
-      stack: error.stack
+      stack: error.stack,
+      raw: error
     });
     return {
       statusCode: error.status || 500,
@@ -39,7 +40,8 @@ exports.handler = async (event) => {
       body: JSON.stringify({ 
         error: error.message,
         name: error.name,
-        details: error.stack
+        details: error.stack,
+        raw: error
       })
     };
   }
