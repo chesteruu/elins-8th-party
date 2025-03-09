@@ -24,67 +24,81 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
   const [nameReadOnly, setNameReadOnly] = useState(false);
   const [existingGuest, setExistingGuest] = useState<Guest | null>(null);
   const [validLink, setValidLink] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   console.log("Current location:", location.pathname, location.search);
 
   // Parse prefilled data from URL and validate the link
   useEffect(() => {
-    if (location.search) {
-      const params = new URLSearchParams(location.search);
+    const fetchGuestData = async () => {
+      setLoading(true);
       
-      const idParam = params.get('id');
-      const nameParam = params.get('name');
-      const guestsParam = params.get('guests');
-      
-      console.log("URL Parameters:", { idParam, nameParam, guestsParam });
-      
-      let isValidLink = false;
-      let guestData: any = {};
-      
-      if (idParam) {
-        const guest = guestService.findGuestById(idParam);
-        console.log("Looking for guest with ID:", idParam);
-        console.log("Found guest:", guest);
+      if (location.search) {
+        const params = new URLSearchParams(location.search);
         
-        if (guest) {
-          setExistingGuest(guest);
-          guestData = {
-            id: guest.id,
-            name: guest.name,
-            guests: guest.numberOfGuests || 1,
-            message: guest.message || '',
-            attending: guest.attending === false ? false : true,
+        const idParam = params.get('id');
+        const nameParam = params.get('name');
+        const guestsParam = params.get('guests');
+        
+        console.log("URL Parameters:", { idParam, nameParam, guestsParam });
+        
+        let isValidLink = false;
+        let guestData: any = {};
+        
+        if (idParam) {
+          try {
+            // Use the async findGuestById method
+            const guest = await guestService.findGuestById(idParam);
+            console.log("Looking for guest with ID:", idParam);
+            console.log("Found guest:", guest);
+            
+            if (guest) {
+              setExistingGuest(guest);
+              guestData = {
+                id: guest.id,
+                name: guest.name,
+                guests: guest.numberOfGuests || 1,
+                message: guest.message || '',
+                attending: guest.attending === false ? false : true,
+              };
+              setNameReadOnly(true);
+              isValidLink = true;
+            }
+          } catch (error) {
+            console.error("Error fetching guest:", error);
+          }
+        } else if (nameParam) {
+          guestData = { 
+            name: nameParam,
+            // Use the guests parameter from the URL or default to 1
+            guests: guestsParam ? parseInt(guestsParam) : 1
           };
           setNameReadOnly(true);
           isValidLink = true;
         }
-      } else if (nameParam) {
-        guestData = { 
-          name: nameParam,
-          // Use the guests parameter from the URL or default to 1
-          guests: guestsParam ? parseInt(guestsParam) : 1
-        };
-        setNameReadOnly(true);
-        isValidLink = true;
-      }
-      
-      if (isValidLink) {
-        console.log("Valid link detected, setting form data:", guestData);
-        setFormData(prev => ({ ...prev, ...guestData }));
-        setValidLink(true);
+        
+        if (isValidLink) {
+          console.log("Valid link detected, setting form data:", guestData);
+          setFormData(prev => ({ ...prev, ...guestData }));
+          setValidLink(true);
+        } else {
+          console.log("Invalid link detected");
+          toast({
+            title: "Invalid invitation link",
+            description: "This link appears to be invalid or expired.",
+            variant: "destructive",
+          });
+          navigate('/');
+        }
       } else {
-        console.log("Invalid link detected");
-        toast({
-          title: "Invalid invitation link",
-          description: "This link appears to be invalid or expired.",
-          variant: "destructive",
-        });
+        console.log("No URL parameters, redirecting to home");
         navigate('/');
       }
-    } else {
-      console.log("No URL parameters, redirecting to home");
-      navigate('/');
-    }
+      
+      setLoading(false);
+    };
+    
+    fetchGuestData();
   }, [location.search, navigate, toast]);
 
   const handleAttendingChange = (attending: boolean) => {
@@ -102,52 +116,69 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
     }));
   };
 
-  const handleRSVPSubmit = (e: React.FormEvent) => {
+  const handleRSVPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // If guest already exists, update it
-    if (existingGuest) {
-      console.log("Updating existing guest:", existingGuest.id);
-      const updatedGuest = guestService.updateGuest(existingGuest.id, {
-        numberOfGuests: formData.attending ? formData.guests : 0,
-        message: formData.message,
-        confirmed: true,
-        attending: formData.attending,
-      });
-      console.log("Updated guest result:", updatedGuest);
+    try {
+      // If guest already exists, update it
+      if (existingGuest) {
+        console.log("Updating existing guest:", existingGuest.id);
+        await guestService.updateGuest(existingGuest.id, {
+          numberOfGuests: formData.attending ? formData.guests : 0,
+          message: formData.message,
+          confirmed: true,
+          attending: formData.attending,
+        });
+        
+        toast({
+          title: "Thank you!",
+          description: `Your attendance status has been updated.`,
+        });
+      } else {
+        // Save new RSVP data
+        console.log("Adding new guest:", formData.name);
+        await guestService.addGuest({
+          name: formData.name,
+          numberOfGuests: formData.attending ? formData.guests : 0,
+          message: formData.message,
+          confirmed: true,
+          attending: formData.attending,
+        });
+        
+        toast({
+          title: "Thank you!",
+          description: `Your attendance has been ${formData.attending ? 'confirmed' : 'declined'}.`,
+        });
+      }
       
-      toast({
-        title: "Thank you!",
-        description: `Your attendance status has been updated.`,
-      });
-    } else {
-      // Save new RSVP data
-      console.log("Adding new guest:", formData.name);
-      const newGuest = guestService.addGuest({
-        name: formData.name,
-        numberOfGuests: formData.attending ? formData.guests : 0,
-        message: formData.message,
-        confirmed: true,
-        attending: formData.attending,
-      });
-      console.log("New guest added:", newGuest);
+      // Set appropriate confirmation step
+      setStep(formData.attending ? 'confirmed' : 'declined');
       
+      // Redirect to home page after a short delay
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
+    } catch (error) {
+      console.error("Error submitting RSVP:", error);
       toast({
-        title: "Thank you!",
-        description: `Your attendance has been ${formData.attending ? 'confirmed' : 'declined'}.`,
+        title: "Error",
+        description: "There was a problem submitting your RSVP. Please try again.",
+        variant: "destructive",
       });
     }
-    
-    // Set appropriate confirmation step
-    setStep(formData.attending ? 'confirmed' : 'declined');
-    
-    // Redirect to home page after a short delay
-    setTimeout(() => {
-      navigate('/');
-    }, 3000);
   };
 
-  // If the link is invalid, don't render the form at all
+  // If still loading or the link is invalid, show appropriate UI
+  if (loading) {
+    return (
+      <div className={cn("w-full", className)}>
+        <div className="glass rounded-xl p-6 animate-fade-in text-center">
+          <p>Loading invitation...</p>
+        </div>
+      </div>
+    );
+  }
+  
   if (!validLink) {
     return null;
   }
