@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Countdown from '@/components/Countdown';
@@ -136,10 +135,6 @@ const Index = () => {
               <CalendarCheck className="h-5 w-5 text-primary" />
               <h2 className="text-2xl font-bold">RSVP</h2>
             </div>
-            <p className="text-muted-foreground">
-              Please let us know if you'll be joining the celebration.
-              The invitation key is required to submit your RSVP.
-            </p>
           </div>
           
           <RSVPForm />
