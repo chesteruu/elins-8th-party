@@ -31,8 +31,6 @@ exports.handler = async (event) => {
     // Build the FQL query dynamically
     const result = await client.query(fql`
       guests.byId(${id})?.updateData({
-          id: "${id}",
-          coll: guests,
           message: "${data.message}",
           confirmed: ${data.confirmed},
           attending: ${data.attending}
