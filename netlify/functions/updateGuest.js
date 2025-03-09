@@ -28,15 +28,6 @@ exports.handler = async (event) => {
     const data = JSON.parse(event.body);
     console.log("Update data received:", data);
     
-    // Only proceed if we have fields to update
-    if (Object.keys(updateData).length === 0) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: "No valid fields to update" })
-      };
-    }
-    
     // Build the FQL query dynamically
     const result = await client.query(fql`
       guests.byId(${id})?.updateData({
