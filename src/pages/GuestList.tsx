@@ -52,12 +52,6 @@ We can't wait to celebrate with you! 🎉🎁✨
   const loadGuests = async () => {
     setLoading(true);
     try {
-      // Initialize password from environment variable if available
-      const envPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-      if (envPassword && !guestService.getPassword()) {
-        guestService.setPassword(envPassword);
-      }
-      
       if (!showPasswordDialog) {
         const loadedGuests = await guestService.getGuests();
         setGuests(loadedGuests);
@@ -81,6 +75,10 @@ We can't wait to celebrate with you! 🎉🎁✨
   }, [showPasswordDialog]);
   
   const handlePasswordSubmit = () => {
+    // Add debugging to help troubleshoot
+    console.log("Checking password:", password);
+    console.log("Environment password exists:", !!import.meta.env.VITE_ADMIN_PASSWORD);
+    
     if (guestService.verifyPassword(password)) {
       setShowPasswordDialog(false);
       setPasswordError('');

@@ -152,10 +152,6 @@ We can't wait to celebrate with you! 🎉🎁✨`;
   }
   
   // Password protection methods
-  setPassword(password: string): void {
-    localStorage.setItem(this.PASSWORD_KEY, password);
-  }
-  
   getPassword(): string | null {
     // Only use the environment variable
     return import.meta.env.VITE_ADMIN_PASSWORD || null;
