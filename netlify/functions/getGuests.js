@@ -2,7 +2,8 @@ const faunadb = require('faunadb');
 const q = faunadb.query;
 
 const client = new faunadb.Client({
-  secret: process.env.FAUNA_SECRET_KEY
+  secret: process.env.FAUNA_SECRET_KEY,
+  domain: 'db.fauna.com'
 });
 
 exports.handler = async (event) => {
@@ -14,25 +15,22 @@ exports.handler = async (event) => {
   };
 
   try {
-    // First test if we can access the collection
-    await client.query(
-      q.Get(q.Collection('guests'))
-    );
-
-    // If that works, try to get all documents
-    const { data } = await client.query(
-      q.Map(
-        q.Paginate(
-          q.Documents(q.Collection('guests')),
-          { size: 100 } // Limit to 100 documents for safety
-        ),
-        q.Lambda('ref', q.Get(q.Var('ref')))
+    const result = await client.query(
+      q.Let(
+        {
+          docs: q.Documents(q.Collection('guests')),
+          all: q.Map(
+            q.Paginate(q.Var('docs'), { size: 100 }),
+            q.Lambda('ref', q.Get(q.Var('ref')))
+          )
+        },
+        q.Var('all')
       )
     );
-    
-    const guests = data.map(d => ({
-      id: d.ref.id,
-      ...d.data
+
+    const guests = (result.data || []).map(doc => ({
+      id: doc.ref.id,
+      ...doc.data
     }));
     
     return {
@@ -44,8 +42,7 @@ exports.handler = async (event) => {
     console.error('Fauna Error:', {
       message: error.message,
       description: error.description,
-      requestResult: error.requestResult,
-      stack: error.stack
+      code: error.requestResult?.statusCode
     });
 
     return {
@@ -54,8 +51,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         error: error.message,
         description: error.description,
-        code: error.requestResult?.statusCode,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        code: error.requestResult?.statusCode
       })
     };
   }
