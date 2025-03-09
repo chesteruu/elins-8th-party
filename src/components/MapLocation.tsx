@@ -10,13 +10,13 @@ interface MapLocationProps {
 const MapLocation = ({ address, className }: MapLocationProps) => {
   return (
     <div className={cn(
-      "relative overflow-hidden rounded-xl border border-accent/20 glass", 
+      "relative overflow-hidden rounded-xl border border-accent/20 glass h-full flex flex-col", 
       className
     )}>
       <iframe
         title="Party Location"
         src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(address)}`}
-        className="w-full aspect-[4/3] rounded-xl"
+        className="w-full flex-grow min-h-[300px] rounded-xl"
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
       />
