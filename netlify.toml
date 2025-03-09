@@ -3,6 +3,12 @@
   publish = "dist"
   command = "npm run build"
 
+# Add this redirect rule for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
 # Security headers
 [[headers]]
   for = "/*"
