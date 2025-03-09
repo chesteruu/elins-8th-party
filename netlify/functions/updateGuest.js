@@ -51,15 +51,17 @@ exports.handler = async (event) => {
         body: JSON.stringify({ error: "No valid fields to update" })
       };
     }
-
-    // Jsonfy the updateData
-    const updateDataJson = JSON.stringify(updateData);
-    console.log("Update data JSON:", updateDataJson);
     
     // Build the FQL query dynamically
     const result = await client.query(fql`
       guests.byId(${id})?.updateData({
-        ${updateDataJson}
+          id: "${id}",
+          coll: guests,
+          name: ${updateData.name},
+          numberOfGuests: ${updateData.numberOfGuests},
+          message: ${updateData.message},
+          confirmed: ${updateData.confirmed},
+          attending: ${updateData.attending}
       })
     `);
     
