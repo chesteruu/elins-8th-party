@@ -24,18 +24,17 @@ exports.handler = async (event) => {
     };
   }
 
-  // Explicitly convert ID to string
-  const stringId = String(id);
-  console.log("Updating guest with ID:", stringId, "Type:", typeof stringId);
-
   try {
     const data = JSON.parse(event.body);
     console.log("Update data received:", data);
     console.log("id:", id)
+
+    stringId = "424958963405029582"
     
     // Pass the string ID to the FQL query
     const result = await client.query(fql`
-      guests.byId(${stringId}).update({
+      let guest = guests.byId(${stringId})
+      guest.updateData({
         message: ${data.message !== undefined ? data.message : null},
         confirmed: ${data.confirmed !== undefined ? data.confirmed : false},
         attending: ${data.attending !== undefined ? data.attending : null}
