@@ -18,13 +18,15 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
   const [formData, setFormData] = useState({
     id: '',
     name: '',
-    guests: 0,
+    guests: 1,
     message: '',
     attending: true,
   });
   const [nameReadOnly, setNameReadOnly] = useState(false);
   const [existingGuest, setExistingGuest] = useState<Guest | null>(null);
   const [validLink, setValidLink] = useState(false);
+
+  console.log("Current location:", location.pathname, location.search);
 
   // Parse prefilled data from URL and validate the link
   useEffect(() => {
@@ -35,16 +37,17 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       const nameParam = params.get('name');
       const guestsParam = params.get('guests');
       
+      console.log("URL Parameters:", { idParam, nameParam, guestsParam });
+      
       // Initialize with invalid link assumption
       let isValidLink = false;
-      let guestData = {};
+      let guestData: any = {};
       
       if (idParam) {
         // Try to find existing guest by ID
         const guest = guestService.findGuestById(idParam);
-        
-        // For debugging
-        console.log("Found guest with ID:", idParam, guest);
+        console.log("Looking for guest with ID:", idParam);
+        console.log("Found guest:", guest);
         
         if (guest) {
           setExistingGuest(guest);
@@ -52,8 +55,8 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
             id: guest.id,
             name: guest.name,
             guests: guest.numberOfGuests || 1,
+            message: guest.message || '',
             attending: guest.attending === false ? false : true,
-            message: guest.message || ''
           };
           setNameReadOnly(true);
           isValidLink = true; // Valid if guest exists
@@ -74,10 +77,12 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       }
       
       if (isValidLink) {
+        console.log("Valid link detected, setting form data:", guestData);
         setFormData(prev => ({ ...prev, ...guestData }));
         setValidLink(true);
       } else {
         // Invalid link
+        console.log("Invalid link detected");
         toast({
           title: "Invalid invitation link",
           description: "This link appears to be invalid or expired.",
@@ -87,6 +92,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       }
     } else {
       // If no URL parameters, redirect to home page
+      console.log("No URL parameters, redirecting to home");
       navigate('/');
     }
   }, [location.search, navigate, toast]);
@@ -111,12 +117,14 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
     
     // If guest already exists, update it
     if (existingGuest) {
-      guestService.updateGuest(existingGuest.id, {
+      console.log("Updating existing guest:", existingGuest.id);
+      const updatedGuest = guestService.updateGuest(existingGuest.id, {
         numberOfGuests: formData.attending ? formData.guests : 0,
         message: formData.message,
         confirmed: true,
         attending: formData.attending,
       });
+      console.log("Updated guest result:", updatedGuest);
       
       toast({
         title: "Thank you!",
@@ -124,13 +132,15 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
       });
     } else {
       // Save new RSVP data
-      guestService.addGuest({
+      console.log("Adding new guest:", formData.name);
+      const newGuest = guestService.addGuest({
         name: formData.name,
         numberOfGuests: formData.attending ? formData.guests : 0,
         message: formData.message,
         confirmed: true,
         attending: formData.attending,
       });
+      console.log("New guest added:", newGuest);
       
       toast({
         title: "Thank you!",

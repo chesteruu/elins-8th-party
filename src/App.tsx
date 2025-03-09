@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import GuestList from "./pages/GuestList";
 import NotFound from "./pages/NotFound";
@@ -21,7 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/guests" element={<GuestList />} />
           <Route path="/rsvp" element={<RSVPForm className="container max-w-md mx-auto py-10 px-4" />} />
-          <Route path="/confirm-attendance" element={<Navigate to="/rsvp" replace />} />
+          <Route path="/confirm-attendance" element={<RSVPForm className="container max-w-md mx-auto py-10 px-4" />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
