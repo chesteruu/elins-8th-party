@@ -1,9 +1,7 @@
-const faunadb = require('faunadb');
-const q = faunadb.query;
+const { Client, fql } = require('fauna');
 
-const client = new faunadb.Client({
+const client = new Client({
   secret: process.env.FAUNA_SECRET_KEY,
-  domain: 'db.fauna.com'
 });
 
 exports.handler = async (event) => {
@@ -20,45 +18,38 @@ exports.handler = async (event) => {
   const data = JSON.parse(event.body);
 
   try {
-    const result = await client.query(
-      q.Let(
-        {
-          newGuest: q.Create(
-            q.Collection('guests'),
-            { 
-              data: {
-                name: data.name,
-                email: data.email || null,
-                numberOfGuests: data.numberOfGuests,
-                message: data.message || '',
-                confirmed: data.confirmed || false,
-                attending: data.attending || null
-              }
-            }
-          )
-        },
-        q.Var('newGuest')
-      )
-    );
+    const result = await client.query(fql`
+      guests.create({
+        name: ${data.name},
+        email: ${data.email || null},
+        numberOfGuests: ${data.numberOfGuests},
+        message: ${data.message || ''},
+        confirmed: ${data.confirmed || false},
+        attending: ${data.attending || null}
+      })
+    `);
     
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ id: result.ref.id, ...result.data })
+      body: JSON.stringify({ 
+        id: result.id,
+        ...result.data
+      })
     };
   } catch (error) {
     console.error('Fauna Error:', {
       message: error.message,
-      description: error.description,
-      code: error.requestResult?.statusCode
+      name: error.name,
+      stack: error.stack
     });
     return {
-      statusCode: error.requestResult?.statusCode || 500,
+      statusCode: error.status || 500,
       headers,
       body: JSON.stringify({ 
         error: error.message,
-        description: error.description,
-        code: error.requestResult?.statusCode
+        name: error.name,
+        details: error.stack
       })
     };
   }

@@ -13,16 +13,20 @@ exports.handler = async (event) => {
   };
 
   try {
+    // Using the correct query syntax for v10
     const result = await client.query(fql`
-      Collection.byName("guests").all().map(
-        (doc) => {
-          {
-            id: doc.id,
-            ...doc.data
-          }
-        }
-      )
+      guests.all().map(x => {
+        id: x.id,
+        name: x.data.name,
+        email: x.data.email,
+        numberOfGuests: x.data.numberOfGuests,
+        message: x.data.message,
+        confirmed: x.data.confirmed,
+        attending: x.data.attending
+      })
     `);
+
+    console.log('Query result:', result); // Debug log
 
     return {
       statusCode: 200,
@@ -30,10 +34,12 @@ exports.handler = async (event) => {
       body: JSON.stringify(result.data || [])
     };
   } catch (error) {
-    console.error('Fauna Error:', {
+    // More detailed error logging
+    console.error('Fauna Error Details:', {
       message: error.message,
-      description: error.description,
-      code: error.status
+      name: error.name,
+      stack: error.stack,
+      raw: error
     });
 
     return {
@@ -41,8 +47,8 @@ exports.handler = async (event) => {
       headers,
       body: JSON.stringify({
         error: error.message,
-        description: error.description,
-        code: error.status
+        name: error.name,
+        details: error.stack
       })
     };
   }
