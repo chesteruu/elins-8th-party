@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Copy, Home, Check, ChevronLeft, UserPlus, Users, Mail, Sparkles, X, Send, Trash2 } from 'lucide-react';
+import { Copy, Home, Check, ChevronLeft, UserPlus, Users, Mail, Sparkles, X, Send, Trash2, RefreshCw } from 'lucide-react';
 import { guestService, Guest } from '@/services/guestService';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const GuestList = () => {
   const [guests, setGuests] = useState<Guest[]>([]);
@@ -21,6 +22,7 @@ const GuestList = () => {
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -47,16 +49,33 @@ We can't wait to celebrate with you! 🎉🎁✨
   };
   
   // Load guests from storage
+  const loadGuests = async () => {
+    setLoading(true);
+    try {
+      // Initialize default password if needed
+      if (!guestService.getPassword()) {
+        guestService.setPassword('2025042808');
+      }
+      
+      if (!showPasswordDialog) {
+        const loadedGuests = await guestService.getGuests();
+        setGuests(loadedGuests);
+      }
+    } catch (error) {
+      console.error('Error loading guests:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load guest list",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
-    // Initialize default password if needed
-    if (!guestService.getPassword()) {
-      guestService.setPassword('2025042808');
-    }
-    
-    if (!showPasswordDialog) {
-      setGuests(guestService.getGuests());
-    }
-  }, [showPasswordDialog]);
+    loadGuests();
+  }, []);
   
   const handlePasswordSubmit = () => {
     if (guestService.verifyPassword(password)) {
@@ -96,9 +115,9 @@ We can't wait to celebrate with you! 🎉🎁✨
     });
   };
   
-  const copyInvitationTemplate = (guest: Guest) => {
+  const copyInvitationTemplate = async (guest: Guest) => {
     const template = guestService.createInvitationTemplate(guest);
-    navigator.clipboard.writeText(template);
+    await navigator.clipboard.writeText(template);
     setCopiedId(guest.id);
     
     toast({
@@ -170,7 +189,6 @@ We can't wait to celebrate with you! 🎉🎁✨
   const pendingGuests = guests.filter(g => !g.confirmed || g.attending === null);
   const totalAttending = attendingGuests.reduce((sum, g) => sum + g.numberOfGuests, 0);
   
-  // Add delete button to each guest row
   const handleDeleteGuest = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this invitation?')) {
       const success = await guestService.deleteGuest(id);
@@ -179,12 +197,11 @@ We can't wait to celebrate with you! 🎉🎁✨
           title: "Success",
           description: "Invitation deleted successfully",
         });
-        // Refresh your guest list here
+        loadGuests(); // Refresh the list
       }
     }
   };
 
-  // Add clear all button
   const handleClearAll = async () => {
     if (window.confirm('Are you sure you want to delete ALL invitations? This cannot be undone!')) {
       const success = await guestService.clearAllGuests();
@@ -193,7 +210,7 @@ We can't wait to celebrate with you! 🎉🎁✨
           title: "Success",
           description: "All invitations have been deleted",
         });
-        // Refresh your guest list here
+        loadGuests(); // Refresh the list
       }
     }
   };
@@ -244,15 +261,27 @@ We can't wait to celebrate with you! 🎉🎁✨
             Back to invitation
           </Link>
           <h1 className="text-3xl font-bold">Guest List</h1>
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={() => setShowClearConfirmation(true)}
-            className="flex items-center gap-1"
-          >
-            <Trash2 className="h-4 w-4" />
-            Clear List
-          </Button>
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              onClick={loadGuests}
+              disabled={loading}
+            >
+              <RefreshCw className={cn(
+                "h-4 w-4 mr-2",
+                loading && "animate-spin"
+              )} />
+              Refresh
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleClearAll}
+              disabled={loading || guests.length === 0}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear All
+            </Button>
+          </div>
         </div>
         
         {/* Stats summary */}
@@ -595,7 +624,7 @@ We can't wait to celebrate with you! 🎉🎁✨
             </div>
           )}
           
-          {guests.length === 0 && (
+          {guests.length === 0 && !loading && (
             <div className="text-center py-12">
               <Sparkles className="h-12 w-12 text-accent mx-auto mb-4 opacity-50" />
               <h3 className="text-xl font-medium mb-2">No guests yet</h3>
