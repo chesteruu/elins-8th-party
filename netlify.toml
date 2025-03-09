@@ -4,14 +4,7 @@
   publish = "dist"
   functions = "netlify/functions"
 
-# First, handle function calls
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = true
-
-# Then, handle SPA routing
+# Handle SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
