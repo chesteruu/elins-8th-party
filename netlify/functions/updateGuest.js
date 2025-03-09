@@ -38,9 +38,11 @@ exports.handler = async (event) => {
     // Pass the string ID to the FQL query
     const result = await client.query(fql`
       Collection.byName("guests").byId(${id})!.update(
-        message: ${data.message !== undefined ? data.message : null},
-        confirmed: ${data.confirmed !== undefined ? data.confirmed : false},
-        attending: ${data.attending !== undefined ? data.attending : null}
+        {
+          message: ${data.message !== undefined ? data.message : null},
+          confirmed: ${data.confirmed !== undefined ? data.confirmed : false},
+          attending: ${data.attending !== undefined ? data.attending : null}
+        }
       )
     `);
     
