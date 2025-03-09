@@ -12,7 +12,7 @@ const Index = () => {
   // Party details - updated to April 25, 2025 (Friday)
   const partyDate = new Date('2025-04-25T16:00:00');
   const partyAddress = 'SMASH Täby, Täby Centrum, Stora Marknadsvägen 15, 183 70 Täby';
-  const arrivalNote = 'Please arrive 10 minutes earlier.';
+  const arrivalNote = 'Please arrive 10 minutes earlier. The party will be around 1 hour 45 minutes long.';
   
   useEffect(() => {
     setMounted(true);
