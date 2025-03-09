@@ -21,21 +21,24 @@ const MapLocation = ({ address, className }: MapLocationProps) => {
         referrerPolicy="no-referrer-when-downgrade"
       />
       
-      <a
-        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute bottom-4 right-4 px-4 py-2 rounded-full 
-          bg-red-500/40 hover:bg-red-500/60 
-          text-white font-medium 
-          backdrop-blur-sm 
-          transition-colors 
-          flex items-center gap-2 
-          shadow-lg"
-      >
-        <MapPin className="h-4 w-4" />
-        Get Directions
-      </a>
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 py-2 rounded-full 
+            bg-red-500/70 hover:bg-red-500/90 
+            text-white font-medium 
+            backdrop-blur-sm 
+            transition-colors 
+            flex items-center gap-2 
+            shadow-lg
+            pointer-events-auto"
+        >
+          <MapPin className="h-4 w-4" />
+          Get Directions
+        </a>
+      </div>
     </div>
   );
 };
