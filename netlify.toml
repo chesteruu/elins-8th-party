@@ -24,9 +24,19 @@
 
 # JavaScript files
 [[headers]]
-  for = "/*.{js,mjs}"
+  for = "/*.js"
   [headers.values]
-    Content-Type = "application/javascript; charset=utf-8"
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/*.mjs"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/assets/*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
 
 # Static assets
 [[headers]]
