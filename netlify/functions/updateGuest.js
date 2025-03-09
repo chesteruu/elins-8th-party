@@ -28,12 +28,6 @@ exports.handler = async (event) => {
     const data = JSON.parse(event.body);
     console.log("Update data received:", data);
     console.log("id:", id)
-
-    const getGuest = await client.query(fql`
-      guests.byId(${id})
-    `);
-
-    console.log("Get guest result:", JSON.stringify(getGuest, null, 2));
     
     // Pass the string ID to the FQL query
     const result = await client.query(fql`
