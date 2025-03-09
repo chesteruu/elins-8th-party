@@ -54,15 +54,14 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ className }) => {
             if (guest) {
               console.log("Guest found, setting existing guest:", guest);
               setExistingGuest(guest);
-              const guestData = {
+              setFormData({
                 id: guest.id,
                 name: guest.name || '',
                 guests: guest.numberOfGuests || 1,
                 message: guest.message || '',
                 attending: guest.attending === false ? false : true,
-              };
+              });
               setNameReadOnly(true);
-              setFormData(prev => ({ ...prev, ...guestData }));
               setValidLink(true);
               console.log("Link is valid based on guest ID");
             } else {

@@ -49,20 +49,20 @@ class GuestService {
       
       // Log the structure of the response
       console.log("Service: Response structure:", Object.keys(response.data));
-      
+      let guest = response.data.data;
       // Check if the response has an ID
-      if (response.data.id) {
-        console.log("Service: Found guest with ID:", response.data.id);
+      if (guest.id) {
+        console.log("Service: Found guest with ID:", guest.id);
         
         // Return the guest data in the expected format
         return {
-          id: response.data.id,
-          name: response.data.name || '',
-          email: response.data.email || '',
-          numberOfGuests: response.data.numberOfGuests || 1,
-          message: response.data.message || '',
-          confirmed: response.data.confirmed || false,
-          attending: response.data.attending === false ? false : null
+          id: guest.id,
+          name: guest.name || '',
+          email: guest.email || '',
+          numberOfGuests: guest.numberOfGuests || 1,
+          message: guest.message || '',
+          confirmed: guest.confirmed || false,
+          attending: guest.attending === false ? false : null
         };
       } else {
         console.log("Service: Response missing ID");
