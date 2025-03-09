@@ -16,7 +16,16 @@ exports.handler = async (event) => {
     const result = await client.query(
       q.Create(
         q.Collection('guests'),
-        { data }
+        { 
+          data: {
+            name: data.name,
+            email: data.email || null,
+            numberOfGuests: data.numberOfGuests,
+            message: data.message || '',
+            confirmed: data.confirmed || false,
+            attending: data.attending || null
+          }
+        }
       )
     );
     
@@ -25,8 +34,9 @@ exports.handler = async (event) => {
       body: JSON.stringify({ id: result.ref.id, ...result.data })
     };
   } catch (error) {
+    console.error('Fauna Error:', error);
     return {
-      statusCode: 500,
+      statusCode: error.requestResult?.statusCode || 500,
       body: JSON.stringify({ error: error.message })
     };
   }
